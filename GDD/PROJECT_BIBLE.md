@@ -652,5 +652,391 @@ Implementation has not started yet.
 
 The current priority is completing and validating the full GDD before production begins.
 
+\---
+
+
+
+\# Additional Design Pillars
+
+
+
+\## Board Identity First
+
+
+
+Every board must have a unique central mechanic.
+
+
+
+The board mechanic should define how the board feels and how players interact with it.
+
+
+
+Examples:
+
+
+
+Casino:
+
+
+
+\* Roulette
+
+\* VIP
+
+\* Dealer Events
+
+
+
+Future boards should follow the same principle.
+
+
+
+Board mechanics should not be simple visual reskins.
+
+
+
+Each board should create a distinct gameplay experience.
+
+
+
+\---
+
+
+
+\## Board Trophies Matter
+
+
+
+PartyGame intentionally treats all Trophies equally.
+
+
+
+Examples:
+
+
+
+\* Main Trophy
+
+\* Main Event Trophy
+
+\* Mini Event Trophy
+
+\* Special Room Trophy
+
+\* Bonus Trophies
+
+
+
+Every Trophy grants:
+
+
+
+1 Victory Point
+
+
+
+No Trophy is inherently more valuable than another.
+
+
+
+\---
+
+
+
+\## Strategic Permanence
+
+
+
+Certain decisions are intentionally permanent.
+
+
+
+Examples:
+
+
+
+\* Building placement
+
+\* Building category selection
+
+\* Building development
+
+
+
+The purpose is to reward planning and long-term strategy.
+
+
+
+\---
+
+
+
+\## Economy Creates Decisions
+
+
+
+Economy should constantly force players to choose between competing goals.
+
+
+
+Examples:
+
+
+
+\* Trophy progression
+
+\* Building progression
+
+\* Item purchases
+
+\* Board opportunities
+
+
+
+Players should rarely be able to afford everything they want.
+
+
+
+\---
+
+
+
+\# Documentation First Development
+
+
+
+PartyGame is developed using a documentation-first workflow.
+
+
+
+The project should never rely on AI memory or chat history.
+
+
+
+Accepted decisions must be documented.
+
+
+
+Documentation is considered the primary source of truth.
+
+
+
+Priority Order:
+
+
+
+1\. GDD\_MASTER.md
+
+2\. PROJECT\_BIBLE.md
+
+3\. CHANGELOG.md
+
+4\. REVIEW\_LOG.md
+
+5\. AI Memory
+
+
+
+\---
+
+
+
+\# Development Workflow
+
+
+
+Current Workflow:
+
+
+
+1\. Design System
+
+2\. Document System
+
+3\. Review System
+
+4\. Update Documentation
+
+5\. Commit Documentation
+
+6\. Prototype
+
+7\. Playtest
+
+8\. Iterate
+
+
+
+The project intentionally delays implementation until the GDD foundation is sufficiently complete.
+
+
+
+\---
+
+
+
+\# Current Development Roadmap
+
+
+
+Phase 1:
+
+Documentation Foundation
+
+
+
+Status:
+
+In Progress
+
+
+
+Goals:
+
+
+
+\* Complete GDD
+
+\* Create documentation structure
+
+\* Perform design reviews
+
+
+
+\---
+
+
+
+Phase 2:
+
+Technical Foundation
+
+
+
+Goals:
+
+
+
+\* Godot architecture
+
+\* Repository structure
+
+\* Development workflow
+
+\* Prototype framework
+
+
+
+\---
+
+
+
+Phase 3:
+
+Vertical Slice
+
+
+
+Goals:
+
+
+
+\* Casino Board
+
+\* Core Match Flow
+
+\* Buildings
+
+\* Trophies
+
+\* Basic Items
+
+\* Basic Minigames
+
+
+
+\---
+
+
+
+Phase 4:
+
+Playtesting \& Iteration
+
+
+
+Goals:
+
+
+
+\* Balance
+
+\* UX Improvements
+
+\* System Refinement
+
+
+
+\---
+
+
+
+Phase 5:
+
+Early Access Preparation
+
+
+
+Goals:
+
+
+
+\* Polish
+
+\* Content Expansion
+
+\* Steam Preparation
+
+
+
+\---
+
+
+
+\# Current Project Status
+
+
+
+Current Focus:
+
+
+
+Completing the Early Access Foundation GDD.
+
+
+
+Priority Systems Remaining:
+
+
+
+\* Dice System
+
+\* Item System
+
+\* Lobby Rules
+
+\* Minigames
+
+\* Detailed Casino Systems
+
+
+
+Implementation has not started yet.
+
+
+
+Current objective is creating a stable and reviewable design foundation.
+
 
 
