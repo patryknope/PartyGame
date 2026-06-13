@@ -97,3 +97,68 @@ Courier travel time should not exceed item production time.
 
 Playtest Required:
 - Production pacing
+
+---
+
+### ACCEPTED
+
+Item Rarity System.
+
+Four tiers:
+- Common
+- Uncommon
+- Rare
+- Legendary
+
+Design Notes:
+- Rarity affects shop appearance chance and price
+- Exact rates and prices to be determined during playtesting
+
+---
+
+### ACCEPTED
+
+Initial Item Pool.
+
+Utility Items:
+- Extra Roll (Common)
+- Shield (Common)
+- Health Kit (Common)
+- Copy Cat (Uncommon)
+- Reverse (Uncommon)
+- Loaded Dice (Rare)
+- Room Key (Rare)
+- Remote Shop (Rare)
+- Swap (Legendary)
+
+Warfare Items:
+- Trap (Common)
+- Punch (Uncommon)
+- Rocket (Uncommon)
+- Magnet (Uncommon)
+- Bomb (Uncommon)
+- Cursed Dice (Rare)
+- Lucky Bastard (Legendary)
+- Loaded Investigation (Legendary)
+
+---
+
+### ACCEPTED
+
+Room Key is the generic name for Special Room access item.
+
+Design Notes:
+- Does not teleport player
+- Player must still travel to Special Room
+- Casino variant name: VIP Key
+
+---
+
+### ACCEPTED
+
+REVIEW_LOG repurposed as rejected ideas log.
+
+Design Notes:
+- Records rejected ideas with reasons
+- Prevents returning to same ideas in future
+- Replaces previous review workflow
