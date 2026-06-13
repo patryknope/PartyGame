@@ -634,7 +634,7 @@ Current Chapter:
 
 
 
-Chapter 5 - Buildings
+Dice System \& Item System
 
 
 
@@ -642,15 +642,9 @@ Status:
 
 
 
-In Progress
+Active Design
 
 
-
-Implementation has not started yet.
-
-
-
-The current priority is completing and validating the full GDD before production begins.
 
 \---
 
@@ -1037,6 +1031,4 @@ Implementation has not started yet.
 
 
 Current objective is creating a stable and reviewable design foundation.
-
-
 

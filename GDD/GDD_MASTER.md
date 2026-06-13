@@ -515,6 +515,7 @@ Winner is determined by total Wealth.
 \* Final list of match settings.
 
 
+
 # CHAPTER 3 - ECONOMY
 
 
@@ -1554,6 +1555,7 @@ Space:
 \* Influence Zone Design
 
 \* Upgrade Cost Progression
+
 ## Production Building
 
 
@@ -1635,6 +1637,20 @@ CANON DECISION
 Primary Implementation:
 
 Courier System
+
+Additional Rule:
+
+
+
+Courier travel time should not exceed item production time.
+
+
+
+Status:
+
+
+
+PLAYTEST REQUIRED
 
 \# CHAPTER 6 - PROPERTY \& BOARD STRUCTURE
 
@@ -2140,7 +2156,23 @@ Main Events are expected to occur less frequently than Mini Events.
 
 
 
-\## VIP Area
+\## Special Room (VIP Room)
+
+
+
+Special Room is the generic system name.
+
+
+
+Casino uses the themed version:
+
+
+
+VIP Room.
+
+
+
+Future boards may use different themed variants of the same system.
 
 
 
@@ -2404,13 +2436,15 @@ Wealth influences the wheel outcome.
 
 
 
-Lower-Wealth players receive better odds.
+Players who are behind receive improved odds.
 
 
 
-Higher-Wealth players receive worse odds.
+The purpose is to help trailing players recover.
 
 
+
+The system should avoid making leading players feel directly punished for success.
 
 Purpose:
 
@@ -2446,6 +2480,148 @@ Purpose:
 
 
 
+\# CHAPTER 9 - DICE SYSTEM
+
+
+
+\## Overview
+
+
+
+Dice are a separate progression category.
+
+
+
+Dice are not Items.
+
+
+
+Dice are permanent during a match.
+
+
+
+\## Dice Collection
+
+
+
+Players:
+
+
+
+\* Have unlimited Dice Collection
+
+\* Have no Dice Slots
+
+\* Have no Dice Loadouts
+
+\* Select a Dice before movement
+
+
+
+Dice do not use rarity tiers.
+
+
+
+\## Dice Acquisition
+
+
+
+Planned sources:
+
+
+
+\* Shop
+
+\* Production Building rewards
+
+\* Board rewards
+
+\* Casino rewards
+
+\* Events
+
+
+
+\## Accepted Dice
+
+
+
+\### Basic Dice
+
+
+
+1 2 3 4 5 6 7 8
+
+
+
+\### Safe Dice
+
+
+
+3 3 4 4 5 5 6 6
+
+
+
+\### Travel Dice
+
+
+
+2 2 4 4 8 8 10 10
+
+
+
+\### Risk Dice
+
+
+
+0 0 0 0 10 10 10 10
+
+
+
+\### Jackpot Dice
+
+
+
+1 2 3 4 5 6 7 8 Jackpot Bust
+
+
+
+\## PLAYTEST REQUIRED
+
+
+
+\### Precision Dice
+
+
+
+1 3 4 4 5 5 7 7
+
+
+
+\### Chaos Dice
+
+
+
+\-10 -10 -5 -1 1 5 10 10
+
+
+
+\### Mirror Dice
+
+
+
+Candidate
+
+
+
+\### Double Dice
+
+
+
+Candidate
+
+
+
 \# OPEN QUESTIONS
 
 
@@ -2461,6 +2637,80 @@ Purpose:
 
 
 \---
+
+
+
+\# CHAPTER 10 - ITEM SYSTEM
+
+
+
+\## Categories
+
+
+
+\### Utility Items
+
+
+
+Strategic items focused on:
+
+
+
+\* Mobility
+
+\* Economy
+
+\* Planning
+
+\* Board interaction
+
+
+
+\### Warfare Items
+
+
+
+Aggressive items focused on:
+
+
+
+\* Sabotage
+
+\* Theft
+
+\* Combat
+
+\* Disruption
+
+
+
+\## Inventory
+
+
+
+Players have:
+
+
+
+8 Item Slots
+
+
+
+\## Shop Rules
+
+
+
+Shop inventory is randomized per player.
+
+
+
+Guaranteed:
+
+
+
+\* Minimum 1 Utility Item
+
+\* Minimum 1 Warfare Item
 
 
 
@@ -2558,9 +2808,9 @@ Pending:
 
 
 
-\* Dice System
+\* Dice System Refinement
 
-\* Item System
+\* Item System Expansion
 
 \* Minigames
 
@@ -2570,8 +2820,6 @@ Pending:
 
 \* Production Roadmap
 
-
-
 Current Progress Estimate:
 
 
@@ -2580,5 +2828,17 @@ Current Progress Estimate:
 
 
 
+Special Room is the generic core system name.
 
+
+
+Casino uses the themed version:
+
+
+
+VIP Room.
+
+
+
+Future boards may use different themed variants of the same system.
 

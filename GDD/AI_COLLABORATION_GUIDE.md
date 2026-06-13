@@ -472,6 +472,58 @@ AI must not reconstruct project state from memory when project documentation is 
 
 
 
+\# Documentation Synchronization Policy
+
+
+
+Documentation files should never be versioned through filenames.
+
+
+
+Use:
+
+
+
+\- GDD\_MASTER.md
+
+\- CURRENT\_STATUS.md
+
+\- CHANGELOG.md
+
+
+
+GitHub is the version control system.
+
+
+
+When synchronizing documentation:
+
+
+
+1\. Update existing files.
+
+2\. Replace file contents.
+
+3\. Commit changes through Git.
+
+
+
+Do not create:
+
+
+
+\- GDD\_MASTER\_v2.md
+
+\- GDD\_MASTER\_final.md
+
+\- GDD\_MASTER\_NEW.md
+
+
+
+unless explicitly requested.
+
+
+
 \# New Chat Policy
 
 
@@ -529,6 +581,166 @@ Before ending a work session AI should verify:
 
 
 If any answer is YES, AI should remind the user before finishing the session.
+
+
+
+\# Documentation Synchronization Policy
+
+
+
+ChatGPT is responsible for maintaining merged project documentation.
+
+
+
+Documentation synchronization means:
+
+
+
+1\. Read current project files.
+
+2\. Apply accepted decisions.
+
+3\. Generate complete updated files.
+
+4\. Preserve existing content unless explicitly changed.
+
+5\. Return ready-to-replace files.
+
+
+
+GitHub is the version control system.
+
+
+
+Documentation files should not be versioned through filenames.
+
+
+
+Do not create:
+
+
+
+\- GDD\_MASTER\_v2.md
+
+\- GDD\_MASTER\_final.md
+
+\- GDD\_MASTER\_NEW.md
+
+
+
+unless explicitly requested.
+
+
+
+Use only:
+
+
+
+\- PROJECT\_BIBLE.md
+
+\- GDD\_MASTER.md
+
+\- CURRENT\_STATUS.md
+
+\- CHANGELOG.md
+
+\- AI\_COLLABORATION\_GUIDE.md
+
+\- REVIEW\_LOG.md
+
+
+
+Synchronization means replacing file contents,
+
+not generating patch notes.
+
+
+
+ChatGPT is responsible for merging accepted decisions into existing documentation.
+
+
+
+Michał is responsible for:
+
+
+
+\- reviewing changes,
+
+\- replacing files,
+
+\- committing changes to GitHub.
+
+
+
+\# Context Management Policy
+
+
+
+ChatGPT is responsible for monitoring project context health.
+
+
+
+If ChatGPT determines that:
+
+
+
+\- many accepted decisions are pending documentation,
+
+\- multiple systems were modified,
+
+\- project state becomes difficult to track reliably,
+
+\- documentation significantly diverges from active discussion,
+
+
+
+ChatGPT should recommend Documentation Synchronization.
+
+
+
+Documentation Synchronization should happen before context quality degrades.
+
+
+
+After major synchronization ChatGPT may recommend starting a new chat.
+
+
+
+Documentation remains the primary source of truth.
+
+
+
+Preventing context drift is considered part of the GDD Owner responsibilities.
+
+
+
+\# Synchronization Completion Policy
+
+
+
+If Documentation Synchronization is started, ChatGPT should complete the synchronization before returning to design discussion.
+
+
+
+Synchronization is considered complete only when:
+
+
+
+\* GDD\_MASTER.md is updated
+
+\* CURRENT\_STATUS.md is updated
+
+\* CHANGELOG.md is updated
+
+\* Project files are internally consistent
+
+
+
+ChatGPT should not continue design work while synchronization remains incomplete.
+
+
+
+If synchronization cannot be completed, ChatGPT must explicitly explain why and identify the remaining required actions.
 
 
 

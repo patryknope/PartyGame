@@ -18,11 +18,35 @@ Game Design Document Creation
 
 
 
-Post-GDD Foundation Review
+Dice System \& Item System
 
 
 
-Status: Documentation Synchronization
+Status:
+
+
+
+Active Design
+
+
+
+\---
+
+
+
+\## Current Focus
+
+
+
+Finalize Dice System
+
+
+
+Finalize Item System
+
+
+
+Prepare Claude Review Package
 
 
 
@@ -86,6 +110,46 @@ Status: Documentation Synchronization
 
 \* Wheel Of Death is a comeback system.
 
+\* Dice are a separate progression category.
+
+\* Dice do not use rarity tiers.
+
+\* Players have unlimited Dice Collection.
+
+\* Players select a Dice before movement.
+
+\* No Dice Slots.
+
+\* No Dice Loadouts.
+
+\* Basic Dice accepted.
+
+\* Safe Dice accepted.
+
+\* Travel Dice accepted.
+
+\* Risk Dice accepted.
+
+\* Jackpot Dice accepted.
+
+\* Utility Items accepted.
+
+\* Warfare Items accepted.
+
+\* Inventory Size = 8 Slots.
+
+\* Shop inventory is randomized.
+
+\* Shop guarantees at least one Utility Item.
+
+\* Shop guarantees at least one Warfare Item.
+
+\* Special Room (VIP Room) naming accepted.
+
+\* Wheel Of Death updated to support losing players.
+
+
+
 
 
 \---
@@ -96,25 +160,15 @@ Status: Documentation Synchronization
 
 
 
-Documentation Review \& Synchronization
+1\. Dice System Completion
 
-
-
-Then:
-
-
-
-1\. Dice System
-
-2\. Item System
+2\. Item System Completion
 
 3\. Lobby \& Match Rules
 
 4\. Minigames
 
 5\. Detailed Casino Systems
-
-
 
 \---
 
@@ -153,6 +207,4 @@ Then:
 
 
 Create a stable documentation foundation before implementation.
-
-
 
