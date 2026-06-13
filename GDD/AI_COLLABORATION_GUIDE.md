@@ -1,928 +1,315 @@
-\# AI\_COLLABORATION\_GUIDE
+# AI_COLLABORATION_GUIDE
 
+## Purpose
 
+This document defines how PartyGame is developed and how Michał and AI assistants collaborate.
 
-\## Purpose
+This document is project canon.
 
+If a conflict exists between AI memory and project documentation,
+project documentation takes priority.
 
+---
 
-This document defines how the PartyGame project is developed and how AI tools should collaborate.
+# Team Structure
 
-
-
-This document is considered project canon.
-
-
-
-If there is a conflict between AI memory and this document, this document takes priority.
-
-
-
-\---
-
-
-
-\# Team Structure
-
-
-
-\## Michał
-
-
+## Michał
 
 Role:
+- Project Owner
+- Game Director
+- Final Decision Maker
+- Tester
 
+---
 
+## Claude (Primary)
 
-\* Project Owner
-
-\* Game Director
-
-\* Final Decision Maker
-
-\* Tester
-
-
-
-Responsibilities:
-
-
-
-\* Approves or rejects decisions
-
-\* Defines project direction
-
-\* Decides priorities
-
-\* Controls project scope
-
-
-
-\---
-
-
-
-\## ChatGPT
-
-
+Platform: Claude Projects
 
 Role:
+- Lead Designer
+- Lead Programmer
+- Documentation Owner
+- Technical Architect
+- Code Reviewer
 
+All design decisions, documentation and code live in Claude Projects.
 
+---
 
-\* Lead Designer
+## ChatGPT (Supporting)
 
-\* GDD Owner
-
-\* System Designer
-
-\* Production Planner
-
-
-
-Responsibilities:
-
-
-
-\* Create and maintain GDD
-
-\* Design systems and mechanics
-
-\* Analyze balance and progression
-
-\* Detect design problems
-
-\* Maintain project documentation
-
-
-
-\---
-
-
-
-\## Claude
-
-
+Platform: ChatGPT (outside Claude Projects)
 
 Role:
+- Brainstorming Partner
+- Minigame and Mechanic Ideation
+- Narrative, Names and Descriptions
+- Second Opinion
 
+ChatGPT does not own documentation or code.
+ChatGPT output is treated as raw input for Claude to evaluate.
 
+When Michał brings a ChatGPT suggestion to Claude:
+- Evaluate technical feasibility
+- Evaluate consistency with existing GDD
+- Propose documentation if decision is accepted
 
-\* Lead Programmer
+---
 
-\* Technical Architect
+# Decision Hierarchy
 
-\* Code Reviewer
+1. Michał
+2. Relevant GDD document
+3. PROJECT_BIBLE.md
+4. DOCUMENTATION_STRUCTURE.md
+5. AI_COLLABORATION_GUIDE.md
+6. CHANGELOG.md
+7. REVIEW_LOG.md
+8. AI Memory
 
-\* Performance Reviewer
+---
 
+# Context Limitation Policy
 
+Claude has no memory between sessions.
 
-Responsibilities:
+Every new session starts without knowledge of previous conversations.
 
+Project documents are the only persistent memory.
 
+Therefore:
+- All accepted decisions must be documented before ending a session.
+- All important context must exist in project files.
+- Do not rely on Claude remembering anything from a previous session.
 
-\* Design implementation architecture
+---
 
-\* Review code structure
+# Existing Session Document Rule
 
-\* Detect technical risks
+If a project document was already provided in the current chat
+and no newer version exists, that document remains the source of truth.
 
-\* Review performance and scalability
+Do not request the same file again unless:
+- The file was modified
+- A newer version exists
+- The file is unavailable
 
-\* Review implementation feasibility
+---
 
-
-
-\---
-
-
-
-\# Decision Hierarchy
-
-
-
-Priority order:
-
-
-
-1\. Michał
-
-2\. GDD\_MASTER.md
-
-3\. PROJECT\_BIBLE.md
-
-4\. CHANGELOG.md
-
-5\. AI Memory
-
-
-
-AI must never override accepted project decisions.
-
-
-
-\---
-
-
-
-\# Dual AI Workflow
-
-
-
-\## Design Decisions
-
-
-
-Lead:
-
-
-
-\* ChatGPT
-
-
-
-Reviewer:
-
-
-
-\* Claude
-
-
-
-Examples:
-
-
-
-\* Economy
-
-\* Buildings
-
-\* Trophy System
-
-\* Board Design
-
-\* Progression Systems
-
-
-
-\---
-
-
-
-\## Programming Decisions
-
-
-
-Lead:
-
-
-
-\* Claude
-
-
-
-Reviewer:
-
-
-
-\* ChatGPT
-
-
-
-Examples:
-
-
-
-\* Godot architecture
-
-\* Scene structure
-
-\* Save systems
-
-\* Networking architecture
-
-\* Performance optimization
-
-
-
-\---
-
-
-
-\## Final Decision
-
-
-
-Owner:
-
-
-
-\* Michał
-
-
-
-Neither ChatGPT nor Claude may make final project decisions.
-
-
-
-\---
-
-
-
-\# Documentation First Policy
-
-
+# Documentation First Policy
 
 Documentation is the source of truth.
 
-
-
-Not AI memory.
-
-Not chat history.
-
-Not assumptions.
-
-
+Accepted decisions must be documented.
 
 If a decision is not documented, it is considered unofficial.
 
+---
 
+# Documentation Rule Minimalism
 
-\---
+Add new rules only when:
+- A real problem occurred
+- Existing rules do not solve it
+- The benefit exceeds maintenance cost
 
+Prefer:
+- Simple workflows
+- Clear responsibilities
+- Minimal duplication
 
+---
 
-\# Mandatory Documentation Updates
+# Process Improvement Policy
 
+If a workflow issue or recurring AI mistake is discovered:
+- Determine the root cause
+- Update process, checklist or documentation if needed
+- Synchronize affected documents
 
+---
 
-After every accepted decision AI must identify which files require updates.
+# Documentation Synchronization Policy
 
-
-
-Possible files:
-
-
-
-\* PROJECT\_BIBLE.md
-
-\* GDD\_MASTER.md
-
-\* CHANGELOG.md
-
-\* AI\_COLLABORATION\_GUIDE.md
-
-\* REVIEW\_LOG.md
-
-
-
-AI should always provide ready-to-paste content.
-
-
-
-\---
-
-
-
-\# Git Update Policy
-
-
-
-After major documentation changes AI should remind the user to:
-
-
-
-git add .
-
-git commit -m "Description of changes"
-
-git push
-
-
-
-Documentation should always remain synchronized with GitHub.
-
-
-
-\---
-
-
-
-\# Claude Review Policy
-
-
-
-The following systems should be reviewed by Claude whenever possible:
-
-
-
-\* Economy
-
-\* Buildings
-
-\* Trophy System
-
-\* Board Mechanics
-
-\* Comeback Mechanics
-
-\* Technical Architecture
-
-\* Multiplayer Architecture
-
-\* Performance-sensitive systems
-
-
-
-\---
-
-
-
-\# Review Log Policy
-
-
-
-Every major Claude review should be recorded in REVIEW\_LOG.md.
-
-
-
-Example:
-
-
-
-Date:
-
-YYYY-MM-DD
-
-
-
-Topic:
-
-Building System
-
-
-
-Reviewed By:
-
-Claude
-
-
-
-Result:
-
-Summary
-
-
-
-Suggestions:
-
-List of recommendations
-
-
-
-\---
-
-
-
-\# Project Context Verification Policy
-
-
-
-Before starting work in a new chat, AI must verify that all required project documents were provided.
-
-
-
-Required documents:
-
-
-
-\* PROJECT\_BIBLE.md
-
-\* GDD\_MASTER.md
-
-\* CHANGELOG.md
-
-\* AI\_COLLABORATION\_GUIDE.md
-
-
-
-Optional documents:
-
-
-
-\* REVIEW\_LOG.md
-
-\* System-specific documents
-
-\* Board-specific documents
-
-
-
-If any required document is missing, AI must explicitly ask for it before continuing work.
-
-
-
-AI must not reconstruct project state from memory when project documentation is unavailable.
-
-
-
-\---
-
-
-
-\# Documentation Synchronization Policy
-
-
-
-Documentation files should never be versioned through filenames.
-
-
-
-Use:
-
-
-
-\- GDD\_MASTER.md
-
-\- CURRENT\_STATUS.md
-
-\- CHANGELOG.md
-
-
+Synchronization means:
+1. Read current files
+2. Apply accepted decisions
+3. Preserve unchanged content
+4. Generate complete replacement files
+5. Return ready-to-replace files
 
 GitHub is the version control system.
 
+Do not generate patch-note files.
 
+---
 
-When synchronizing documentation:
+# Complete File Policy
 
+When generating or updating any file:
+- Always provide the complete, ready-to-save file.
+- Never use "..." or "rest remains unchanged" shortcuts.
+- Never provide only changed lines.
+- If the file is large, split it into logical sections and provide each section completely.
 
+Partial files cause information loss and are not acceptable.
 
-1\. Update existing files.
+---
 
-2\. Replace file contents.
+# Synchronization Order Policy
 
-3\. Commit changes through Git.
+When a rule, workflow or architecture change is accepted:
+1. Update the highest-authority document first
+2. Update dependent documents afterwards
+3. Verify consistency
+4. Continue migration
 
+---
 
+# Accepted Decision Continuation Rule
 
-Do not create:
+If a decision was already accepted during the current session:
+- Treat it as approved
+- Continue implementation automatically
+- Do not repeatedly request confirmation
 
+Request confirmation again only if:
+- Scope changed
+- A conflict exists
+- Multiple valid options remain
 
+---
 
-\- GDD\_MASTER\_v2.md
+# Context Management Policy
 
-\- GDD\_MASTER\_final.md
+Recommend synchronization when:
+- Many decisions are pending documentation
+- Multiple systems changed
+- Documentation diverges from discussion
 
-\- GDD\_MASTER\_NEW.md
+---
 
+# Lost Context Prevention Policy
 
+Synchronization should preserve:
+- Accepted mechanics
+- Constraints
+- Balance assumptions
+- Important exclusions
+- Design intentions
+- Playtest requirements
 
-unless explicitly requested.
+---
 
-
-
-\# New Chat Policy
-
-
-
-Before starting work:
-
-
-
-1\. Read PROJECT\_BIBLE.md
-
-2\. Read GDD\_MASTER.md
-
-3\. Read CHANGELOG.md
-
-4\. Read AI\_COLLABORATION\_GUIDE.md
-
-
-
-Verify that all required documents were provided.
-
-
-
-Only then continue work.
-
-
-
-Never assume project state from memory alone.
-
-
-
-\---
-
-
-
-\# End Of Session Checklist
-
-
-
-Before ending a work session AI should verify:
-
-
-
-\* Were new decisions accepted?
-
-\* Does GDD require updates?
-
-\* Does CHANGELOG require updates?
-
-\* Was Claude consulted?
-
-\* Does REVIEW\_LOG require updates?
-
-\* Does the user need to commit changes to GitHub?
-
-
-
-If any answer is YES, AI should remind the user before finishing the session.
-
-
-
-\# Documentation Synchronization Policy
-
-
-
-ChatGPT is responsible for maintaining merged project documentation.
-
-
-
-Documentation synchronization means:
-
-
-
-1\. Read current project files.
-
-2\. Apply accepted decisions.
-
-3\. Generate complete updated files.
-
-4\. Preserve existing content unless explicitly changed.
-
-5\. Return ready-to-replace files.
-
-
-
-GitHub is the version control system.
-
-
-
-Documentation files should not be versioned through filenames.
-
-
-
-Do not create:
-
-
-
-\- GDD\_MASTER\_v2.md
-
-\- GDD\_MASTER\_final.md
-
-\- GDD\_MASTER\_NEW.md
-
-
-
-unless explicitly requested.
-
-
-
-Use only:
-
-
-
-\- PROJECT\_BIBLE.md
-
-\- GDD\_MASTER.md
-
-\- CURRENT\_STATUS.md
-
-\- CHANGELOG.md
-
-\- AI\_COLLABORATION\_GUIDE.md
-
-\- REVIEW\_LOG.md
-
-
-
-Synchronization means replacing file contents,
-
-not generating patch notes.
-
-
-
-ChatGPT is responsible for merging accepted decisions into existing documentation.
-
-
-
-Michał is responsible for:
-
-
-
-\- reviewing changes,
-
-\- replacing files,
-
-\- committing changes to GitHub.
-
-
-
-\# Context Management Policy
-
-
-
-ChatGPT is responsible for monitoring project context health.
-
-
-
-If ChatGPT determines that:
-
-
-
-\- many accepted decisions are pending documentation,
-
-\- multiple systems were modified,
-
-\- project state becomes difficult to track reliably,
-
-\- documentation significantly diverges from active discussion,
-
-
-
-ChatGPT should recommend Documentation Synchronization.
-
-
-
-Documentation Synchronization should happen before context quality degrades.
-
-
-
-After major synchronization ChatGPT may recommend starting a new chat.
-
-
-
-Documentation remains the primary source of truth.
-
-
-
-Preventing context drift is considered part of the GDD Owner responsibilities.
-
-
-
-\# Synchronization Completion Policy
-
-
-
-If Documentation Synchronization is started, ChatGPT should complete the synchronization before returning to design discussion.
-
-
-
-Synchronization is considered complete only when:
-
-
-
-\* GDD\_MASTER.md is updated
-
-\* CURRENT\_STATUS.md is updated
-
-\* CHANGELOG.md is updated
-
-\* Project files are internally consistent
-
-
-
-ChatGPT should not continue design work while synchronization remains incomplete.
-
-
-
-If synchronization cannot be completed, ChatGPT must explicitly explain why and identify the remaining required actions.
-
-
-
-\# Future Documentation Scaling
-
-
-
-GDD\_MASTER should remain a single file during early design.
-
-
-
-When documentation becomes difficult to maintain,
-
-the project may be migrated into a modular documentation structure.
-
-
-
-Possible split:
-
-
-
-\- Vision.md
-
-\- Match\_Flow.md
-
-\- Economy.md
-
-\- Buildings.md
-
-\- Dice.md
-
-\- Items.md
-
-\- Boards/
-
-\- Minigames.md
-
-
-
-\# Documentation Detail Policy
-
-
-
-Documentation should capture accepted decisions and the most important supporting details.
-
-
-
-The goal is not maximum detail.
-
-
-
-The goal is to preserve information that would otherwise be lost between chats.
-
-
-
-When documenting a system:
-
-
+# Documentation Detail Policy
 
 Include:
+- Accepted decisions
+- Constraints
+- Important exclusions
+- Design intentions
+- Playtest requirements
 
+Avoid:
+- Excessive implementation details
+- Long essays
+- Duplicate explanations
 
+---
 
-\* Accepted decisions
+# Documentation Formatting Standard
 
-\* Important constraints
+- Use Markdown
+- Prefer short paragraphs
+- Avoid excessively long lines
+- Avoid unnecessary tables
+- Keep formatting simple
 
-\* Design intentions
+---
 
-\* Playtest requirements
+# Verification Checklist Policy
 
+Checklists are internal tools.
 
+Execute them before responding.
 
-Do not include:
+Do not announce checklist execution unless a problem is found.
 
+---
 
+## File Generation Checklist
 
-\* Excessive implementation details
+Before generating a file verify:
+- Correct project filename
+- Existing filename is used
+- No temporary filename is used
+- No versioned filename is used
+- Correct document responsibility
+- File is complete, not partial
 
-\* Long design essays
+Forbidden examples:
+- *_v2.md
+- *_new.md
+- *_revised.md
+- *_update.md
+- *_final.md
 
-\* Information that can be rediscovered easily
+Generate replacement files only.
 
+---
 
+## Documentation Placement Checklist
 
-The preferred approach is concise but complete documentation.
+Verify:
+- Information belongs in this document
+- Information is not duplicated elsewhere
+- No better location exists
 
+---
 
+## Synchronization Verification Checklist
 
-\# Lost Context Prevention Policy
+Verify:
+- All affected files were updated
+- Files remain consistent
+- No decisions were lost
+- Assumptions were preserved
+- Important exclusions were preserved
 
+---
 
+## Dependency Verification Checklist
 
-Before recommending a synchronization, ChatGPT should identify decisions that exist in discussion but are not yet represented in documentation.
+Verify:
+- Source documents were updated first
+- Dependencies are synchronized
+- No inconsistency is introduced
 
+---
 
+# Synchronization Completion Policy
 
-A synchronization should preserve:
+Synchronization is complete only when:
+- Relevant documents are updated
+- Files remain internally consistent
 
+---
 
+# New Chat Checklist
 
-\* Accepted mechanics
+1. Read PROJECT_BIBLE.md
+2. Read AI_COLLABORATION_GUIDE.md
+3. Read DOCUMENTATION_STRUCTURE.md
+4. Read CURRENT_STATUS.md
+5. Read relevant GDD documents
 
-\* Important balance assumptions
+---
 
-\* Design constraints
+# End Of Session Checklist
 
-\* Playtest requirements
-
-
-
-The purpose is to prevent loss of project knowledge when starting a new chat.
-
-\# Documentation Detail Policy
-
-
-
-Documentation should capture accepted decisions and the most important supporting details.
-
-
-
-The goal is not maximum detail.
-
-
-
-The goal is to preserve information that would otherwise be lost between chats.
-
-
-
-When documenting a system include:
-
-
-
-\- Accepted decisions
-
-\- Important constraints
-
-\- Design intentions
-
-\- Playtest requirements
-
-
-
-Do not include:
-
-
-
-\- Excessive implementation details
-
-\- Long design essays
-
-\- Information that can be rediscovered easily
-
-
-
-Preferred approach:
-
-
-
-Concise but complete documentation.
-
-\# Lost Context Prevention Policy
-
-
-
-Before recommending a synchronization, ChatGPT should identify decisions that exist in discussion but are not yet represented in documentation.
-
-
-
-A synchronization should preserve:
-
-
-
-\- Accepted mechanics
-
-\- Important balance assumptions
-
-\- Design constraints
-
-\- Playtest requirements
-
-
-
-The purpose is to prevent loss of project knowledge when starting a new chat.
-
+Verify:
+- New decisions documented
+- Required files updated
+- GitHub commit reminder needed
