@@ -854,5 +854,75 @@ A synchronization should preserve:
 
 The purpose is to prevent loss of project knowledge when starting a new chat.
 
+\# Documentation Detail Policy
 
+
+
+Documentation should capture accepted decisions and the most important supporting details.
+
+
+
+The goal is not maximum detail.
+
+
+
+The goal is to preserve information that would otherwise be lost between chats.
+
+
+
+When documenting a system include:
+
+
+
+\- Accepted decisions
+
+\- Important constraints
+
+\- Design intentions
+
+\- Playtest requirements
+
+
+
+Do not include:
+
+
+
+\- Excessive implementation details
+
+\- Long design essays
+
+\- Information that can be rediscovered easily
+
+
+
+Preferred approach:
+
+
+
+Concise but complete documentation.
+
+\# Lost Context Prevention Policy
+
+
+
+Before recommending a synchronization, ChatGPT should identify decisions that exist in discussion but are not yet represented in documentation.
+
+
+
+A synchronization should preserve:
+
+
+
+\- Accepted mechanics
+
+\- Important balance assumptions
+
+\- Design constraints
+
+\- Playtest requirements
+
+
+
+The purpose is to prevent loss of project knowledge when starting a new chat.
 
