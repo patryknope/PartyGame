@@ -10,7 +10,8 @@ Game Design Document Creation
 
 - Finalize Dice System
 - Finalize Item System
-- Prepare Claude Review Package
+- Finalize documentation standards
+- Prepare Claude Review
 
 ---
 
@@ -18,7 +19,7 @@ Game Design Document Creation
 
 - Dice System
 - Item System
-- Documentation Migration
+- Documentation Standards
 
 ---
 
@@ -57,10 +58,44 @@ Game Design Document Creation
 
 ---
 
+## Claude Review Required
+
+1. Economy Scaling
+2. Trophy Economy
+3. Building Balance
+4. Courier System
+5. Influence Zones
+6. Property System
+7. VIP System
+8. Roulette Design
+9. Comeback Systems
+10. Wealth Formula
+
+---
+
+## Playtest Required
+
+1. Courier System
+2. Influence Zone Size
+3. Property Takeover Cost
+4. VIP Value
+5. Roulette Frequency
+6. Main Event Frequency
+7. Death Penalty
+8. Wealth Formula
+9. Trophy Costs
+10. Jackpot reward satisfaction
+11. Bust frustration level
+
+---
+
 ## Recent Major Decisions
 
 - Dice became a separate progression category.
 - Unlimited Dice Collection accepted.
+- Dice are reusable.
 - Courier System remains primary Production Building direction.
 - Wheel Of Death supports trailing players.
 - Special Room became the generic system name.
+- Game targets Steam release, multiplayer is primarily online.
+- GDD_MASTER_(2).md migrated to individual GDD files.

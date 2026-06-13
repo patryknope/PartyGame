@@ -1,18 +1,26 @@
 # GDD_CASINO
 
 ## Overview
-First planned board.
+Casino is the first planned board and the foundation of Early Access.
+The board is designed around risk, rewards and gambling-inspired mechanics.
+Casino should feel chaotic, unpredictable, entertaining and interactive.
 
 ## Core Board Mechanic
-Roulette
+Primary mechanic: Roulette
+
+Roulette is the central system of the Casino board.
+Many board events and outcomes originate from Roulette results.
 
 ## Dealer
-Responsible for:
+The Dealer acts as the board controller — not a player, but a board mechanic.
+
+Responsibilities:
 - Triggering Events
 - Managing Roulette outcomes
 - Creating match variety
 
 ## Board Events
+Casino contains multiple event categories.
 Examples:
 - Positive Events
 - Negative Events
@@ -20,24 +28,34 @@ Examples:
 - Player Events
 - Economy Events
 
-## Mini Events
-Frequent board interactions.
+Specific events are not yet finalized.
 
-## Main Events
-Large board-changing moments.
+### Mini Events
+Smaller, frequent board interactions.
+Purpose: frequent board activity, additional decisions, increased unpredictability.
+Mini Events may reward or punish players.
 
-## VIP Room
+### Main Events
+Large, board-changing moments that occur less frequently than Mini Events.
+Purpose: shake up the game state, create memorable moments, encourage adaptation.
+
+## Special Room — VIP Room
+Special Room is the generic core system name.
+Casino uses the themed variant: VIP Room.
+Future boards will have their own themed variants of this system.
+
 Players may:
-- Enter VIP
-- Be removed from VIP
-- Gain access through mechanics
+- Enter the VIP Room
+- Be removed from the VIP Room
+- Gain access through board mechanics
 - Gain access through items
-- Gain access through Roulette
+- Gain access through Roulette outcomes
 
-## VIP Design Goals
+VIP Design Goals:
 - High value opportunities
 - Player competition
 - Strategic decisions
+- Important but not mandatory
 
 ## Board Trophies
 - Main Trophy
@@ -45,18 +63,13 @@ Players may:
 - Mini Event Trophy
 - Special Room Trophy
 
-All worth 1 Victory Point.
-
-## Board Identity
-- Chaotic
-- Unpredictable
-- Entertaining
-- Interactive
+All Trophies are worth 1 Victory Point.
 
 ## Canon Decisions
 - Roulette is the primary Casino mechanic.
-- Dealer controls board events.
-- VIP is a major Casino system.
+- The Dealer controls board events.
+- VIP Room is a major Casino system.
+- Special Room is the generic system name.
 - Main Event Trophy exists.
 - Mini Event Trophy exists.
 - Special Room Trophy exists.

@@ -53,13 +53,20 @@ Szczegóły projektu znajdują się w plikach projektowych w Project Knowledge.
 
 ---
 
+## Zasady językowe
+
+- Komunikacja z Michałem: polski
+- Dokumentacja projektowa: angielski
+- Kod i komentarze w kodzie: angielski
+- Silnik: Godot 4, język: GDScript
+
+---
+
 ## Zasady ogólne
 
 - Czytaj pliki projektowe przed każdą odpowiedzią która ich dotyczy.
 - Dokumentacja ma pierwszeństwo przed Twoją pamięcią.
 - Nie masz pamięci między sesjami — pliki projektowe są jedyną ciągłością projektu.
-- Kod pisz zawsze z komentarzami po polsku.
-- Silnik: Godot 4, język: GDScript.
 
 ---
 

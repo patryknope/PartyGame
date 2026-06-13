@@ -1,22 +1,22 @@
 # GDD_ECONOMY
 
 ## Overview
-Economy creates meaningful decisions and tradeoffs.
+Economy is one of the primary systems of PartyGame.
+Its purpose is to create meaningful decisions and tradeoffs throughout the match.
+Players should rarely feel capable of purchasing everything they want.
 
 ## Currency
-Universal Currency: Coins
+Universal currency: Coins
 
-Visual variants:
-- Chips
-- Doubloons
-- Credits
+Individual boards may visually rename Coins without changing mechanics.
+Examples:
+- Casino: Chips
+- Pirates: Doubloons
+- Space: Credits
 
 ## Wealth
-Used for:
-- Tie breakers
-- Certain comeback mechanics
-- Certain board mechanics
-- Potential future systems
+Wealth represents the total value of a player's assets.
+Used as the primary tiebreaker and in certain comeback and board mechanics.
 
 Sources:
 - Coins
@@ -38,7 +38,7 @@ Exact Wealth Formula: OPEN QUESTION
 - Trophy Rewards
 - Future Systems
 
-## Spending
+## Spending Categories
 - Trophies
 - Buildings
 - Building Upgrades
@@ -48,9 +48,7 @@ Exact Wealth Formula: OPEN QUESTION
 - Special Events
 
 ## Economy Design Philosophy
-Economy should create tension.
-Players should rarely afford everything.
-
+A player investing heavily into one area should sacrifice progress in another.
 Examples:
 - Economy vs Trophies
 - Buildings vs Items
@@ -59,7 +57,7 @@ Examples:
 ## Canon Decisions
 - Coins are the universal currency.
 - Boards may rename Coins visually.
-- Wealth is used as the primary tie breaker.
+- Wealth is the primary tiebreaker.
 - Economy should force meaningful choices.
 
 ## Open Questions

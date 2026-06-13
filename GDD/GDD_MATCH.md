@@ -1,25 +1,32 @@
 # GDD_MATCH
 
+## Overview
+This document defines the structure of a match and a player turn.
+Match flow is the same on every board — it is a core system.
+
 ## Supported Players
-2-6
+Minimum: 2
+Maximum: 6
 
 ## Match Length
 Default: 15 turns
 
-Planned:
-- 10
-- 15
-- 20
-- 30
+Planned options:
+- 10 turns
+- 15 turns
+- 20 turns
+- 30 turns
 
 ## Match Flow
+Each round follows this order:
 1. All player turns
 2. Minigame
 3. Board Mechanic Update
 4. Next Round
 
 ## Turn Flow
-1. Use War Item
+Each player turn follows this order:
+1. Use War Item (optional)
 2. Select Dice
 3. Roll Dice
 4. Movement
@@ -30,30 +37,21 @@ Planned:
 9. End Turn
 
 ## War Items
-Used before movement.
-
-Purpose:
-- attacking players
-- disruption
-- aggression
+Used before movement only.
+Purpose: attacking players, disruption, aggression.
 
 ## Utility Items
-Used during turn.
-
-Purpose:
-- mobility
-- economy
-- utility
-- planning
+Used during the player's turn.
+Purpose: mobility, economy, utility, planning.
 
 ## Tie Breakers
-Wealth determines winner when Trophy counts are equal.
+When Trophy counts are equal, total Wealth determines the winner.
 
-## Accepted Decisions
+## Canon Decisions
 - Default match length is 15 turns.
 - Wealth breaks ties.
 - Utility items are usable during the turn.
-- War items are usable before movement.
+- War items are usable before movement only.
 
 ## Open Questions
 - Final list of match settings.
