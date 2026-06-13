@@ -744,3 +744,115 @@ If synchronization cannot be completed, ChatGPT must explicitly explain why and 
 
 
 
+\# Future Documentation Scaling
+
+
+
+GDD\_MASTER should remain a single file during early design.
+
+
+
+When documentation becomes difficult to maintain,
+
+the project may be migrated into a modular documentation structure.
+
+
+
+Possible split:
+
+
+
+\- Vision.md
+
+\- Match\_Flow.md
+
+\- Economy.md
+
+\- Buildings.md
+
+\- Dice.md
+
+\- Items.md
+
+\- Boards/
+
+\- Minigames.md
+
+
+
+\# Documentation Detail Policy
+
+
+
+Documentation should capture accepted decisions and the most important supporting details.
+
+
+
+The goal is not maximum detail.
+
+
+
+The goal is to preserve information that would otherwise be lost between chats.
+
+
+
+When documenting a system:
+
+
+
+Include:
+
+
+
+\* Accepted decisions
+
+\* Important constraints
+
+\* Design intentions
+
+\* Playtest requirements
+
+
+
+Do not include:
+
+
+
+\* Excessive implementation details
+
+\* Long design essays
+
+\* Information that can be rediscovered easily
+
+
+
+The preferred approach is concise but complete documentation.
+
+
+
+\# Lost Context Prevention Policy
+
+
+
+Before recommending a synchronization, ChatGPT should identify decisions that exist in discussion but are not yet represented in documentation.
+
+
+
+A synchronization should preserve:
+
+
+
+\* Accepted mechanics
+
+\* Important balance assumptions
+
+\* Design constraints
+
+\* Playtest requirements
+
+
+
+The purpose is to prevent loss of project knowledge when starting a new chat.
+
+
+

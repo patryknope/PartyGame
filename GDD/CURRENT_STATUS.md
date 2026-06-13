@@ -148,6 +148,18 @@ Prepare Claude Review Package
 
 \* Wheel Of Death updated to support losing players.
 
+\* Jackpot Dice rewards are intentionally weighted toward small rewards.
+
+\* Teleport rewards are excluded from Jackpot Dice.
+
+\* Production Buildings use Courier Delivery as primary implementation.
+
+\* Courier travel time should not exceed item production time.
+
+\* Production remains blocked while delivery is active.
+
+
+
 
 
 

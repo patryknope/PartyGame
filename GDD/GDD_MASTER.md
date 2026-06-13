@@ -1638,6 +1638,32 @@ Primary Implementation:
 
 Courier System
 
+\#### Production Design Notes
+
+
+
+The goal of the Courier System is to make Production Buildings visible and interactive.
+
+
+
+Current Direction:
+
+
+
+\* Production is blocked until the current delivery is completed.
+
+\* Courier travel time should not exceed item production time.
+
+
+
+Playtest Goal:
+
+
+
+Determine whether the Courier creates meaningful interaction or unnecessary frustration.
+
+
+
 Additional Rule:
 
 
@@ -2583,6 +2609,62 @@ Planned sources:
 
 
 1 2 3 4 5 6 7 8 Jackpot Bust
+
+\#### Jackpot Design Notes
+
+
+
+Jackpot Dice is designed as a high-risk entertainment Dice.
+
+
+
+Jackpot Outcome Philosophy:
+
+
+
+\* Most Jackpot outcomes should be small rewards.
+
+\* Medium rewards should be uncommon.
+
+\* Major rewards should be very rare.
+
+
+
+Examples:
+
+
+
+\* +1 to +5 Coins
+
+\* +1 to +5 Movement
+
+\* Rare Extra Roll
+
+\* Very Rare VIP Key
+
+
+
+Teleport effects are intentionally excluded.
+
+
+
+Bust Outcome Philosophy:
+
+
+
+\* Small setbacks
+
+\* Coin loss
+
+\* Negative movement
+
+\* Item loss
+
+
+
+Bust should feel dangerous but not game-ending.
+
+
 
 
 
