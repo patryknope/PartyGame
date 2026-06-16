@@ -2,32 +2,31 @@
 
 ## Current Stage
 
-Game Design Document Creation
+Game Design Document Creation + Production Planning
 
 ---
 
 ## Current Focus
 
-- Lobby & Match Rules
 - Minigames
 - Detailed Casino Systems
 - Prepare Claude Review Package
+- Production Roadmap (Faza 2 ustalona)
 
 ---
 
 ## Active Topics
 
-- Lobby & Match Rules
-- Documentation Migration
+- Minigames
+- Detailed Casino Systems
 
 ---
 
 ## Next Planned Topics
 
-1. Lobby & Match Rules
-2. Minigames
-3. Detailed Casino Systems
-4. Claude Review Package
+1. Minigames
+2. Detailed Casino Systems
+3. Claude Review Package
 
 ---
 
@@ -37,11 +36,12 @@ Game Design Document Creation
 2. Claude Review
 3. GDD Revisions
 4. Production Roadmap
-5. Architecture
-6. Prototype
-7. Vertical Slice
-8. Testing
-9. Early Access
+5. Technical Foundation (Faza 2)
+6. Lokalny Prototyp (Etap 1)
+7. Multiplayer Prototype (Etap 2)
+8. Vertical Slice
+9. Testing
+10. Early Access
 
 ---
 
@@ -55,11 +55,22 @@ Game Design Document Creation
 - Upgrade Costs
 - Item prices per rarity tier
 - Shop appearance rates per rarity tier
+- Default Starting Coins value
+- Full list of Economy lobby options
+- Dokładna lista managerów
+- Szczegółowy zakres podstawowej planszy w Etapie 1
+- Konfiguracja Claude Code
 
 ---
 
 ## Recent Major Decisions
 
+- Lobby & Match Rules established.
+- Visual Style accepted: 3D Low Poly Cartoon.
+- Character System accepted: Cartoon Mascots (modular parts).
+- Asset pipeline established: Kenney → prototyp → Fab/Sketchfab → AI 3D.
+- Blender accepted for later stages only.
+- ChatGPT role expanded to include Art Direction Consultant.
 - Item System completed.
 - Item Rarity System accepted (Common, Uncommon, Rare, Legendary).
 - Initial Item Pool established (9 Utility, 8 Warfare).
@@ -69,3 +80,8 @@ Game Design Document Creation
 - Courier System remains primary Production Building direction.
 - Wheel Of Death supports trailing players.
 - Special Room became the generic system name.
+- Network Architecture established: peer-to-peer z hostem, Steam Networking.
+- Production Order established: lokalny prototyp → multiplayer → content.
+- Project Folder Structure established.
+- Coding Rules established: managery, jedno źródło prawdy, UI bez logiki.
+- Programmer: Claude Code.

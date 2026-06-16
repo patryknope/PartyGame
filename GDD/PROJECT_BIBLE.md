@@ -91,15 +91,18 @@ Board systems are unique to individual boards.
 # Team Structure
 
 Project Owner:
-
 - Michał
 
 Lead Designer:
-
 - ChatGPT
 
-Lead Programmer:
+Co-Designer:
+- Claude
 
+Lead Programmer:
+- Claude Code
+
+Documentation Owner:
 - Claude
 
 Final project decisions always belong to Michał.
@@ -108,18 +111,74 @@ Final project decisions always belong to Michał.
 
 # AI Collaboration Philosophy
 
-ChatGPT:
+## ChatGPT — Lead Designer (55%)
+- Mechanical design and ideation
+- Concept art direction
+- Primary design force
 
-- Design
-- Systems
-- Documentation
-- Planning
+## Claude — Co-Designer + Documentation Owner (45% design)
+- Design support and evaluation
+- Technical feasibility review
+- Full documentation ownership
+- Primary communication hub with Michał
+- Evaluates and integrates ChatGPT suggestions
+- Generates ChatGPT consultation prompts
 
-Claude:
+## Claude Code — Lead Programmer
+- Writing code (GDScript / Godot 4)
+- Technical architecture
+- Code review
 
-- Programming
-- Architecture
-- Technical Review
+---
+
+# Design Workflow
+
+The workflow between Claude and ChatGPT functions as a design review, not an expert consultation.
+
+Each brings a different perspective:
+- Claude evaluates through the lens of project consistency, architecture and documentation.
+- ChatGPT questions assumptions, proposes alternatives and seeks compromises.
+
+For significant design decisions:
+1. Topic discussed with Claude
+2. Claude generates a ChatGPT consultation prompt in a code block
+3. Michał pastes ChatGPT response back to Claude
+4. Claude evaluates and documents the decision
+5. Consultation can be skipped when Michał decides it is not needed
+
+ChatGPT has access to project files so prompts do not need general game context.
+Prompts include only the current topic and consultation goal.
+
+Consultations have the most value for:
+- Large mechanics
+- Architecture decisions
+- Economy systems
+- Multiplayer
+- Roadmap
+- Changes affecting multiple systems
+
+---
+
+# File Generation Standard
+
+When generating project files:
+- Deliver only the file itself
+- No surrounding text or explanation
+- File should be ready to download and save directly
+
+---
+
+# Technical Decisions
+
+Engine: Godot 4
+
+Language: GDScript
+
+Multiplayer: Online (peer-to-peer na start)
+
+Local Multiplayer: Tak
+
+Dedykowany serwer: Opcja przyszłościowa po Early Access
 
 ---
 
@@ -135,6 +194,8 @@ Planned scope:
 - Full Building System
 - Full Item System
 - Full Match Flow
+- Online Multiplayer (peer-to-peer)
+- Local Multiplayer
 
 ---
 
@@ -147,6 +208,7 @@ Target scope:
 - 50+ Items
 - Multiple Board Mechanics
 - Expanded Custom Rules
+- Dedicated Server (post Early Access consideration)
 
 ---
 

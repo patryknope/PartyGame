@@ -23,38 +23,44 @@ Role:
 
 ---
 
-## Claude (Primary)
-
-Platform: Claude Projects
-
-Role:
-- Lead Designer
-- Lead Programmer
-- Documentation Owner
-- Technical Architect
-- Code Reviewer
-
-All design decisions, documentation and code live in Claude Projects.
-
----
-
-## ChatGPT (Supporting)
+## ChatGPT — Lead Designer (55%)
 
 Platform: ChatGPT (outside Claude Projects)
 
 Role:
-- Brainstorming Partner
-- Minigame and Mechanic Ideation
-- Narrative, Names and Descriptions
-- Second Opinion
+- Lead Designer
+- Mechanical design and ideation
+- Concept art direction
+- Primary design force
 
+ChatGPT has access to project files.
 ChatGPT does not own documentation or code.
-ChatGPT output is treated as raw input for Claude to evaluate.
 
-When Michał brings a ChatGPT suggestion to Claude:
-- Evaluate technical feasibility
-- Evaluate consistency with existing GDD
-- Propose documentation if decision is accepted
+---
+
+## Claude — Co-Designer + Documentation Owner
+
+Platform: Claude Projects
+
+Role:
+- Co-Designer (45% design)
+- Documentation Owner
+- Primary communication hub with Michał
+- Evaluates ChatGPT suggestions for feasibility and GDD consistency
+- Generates ChatGPT consultation prompts
+
+All documentation lives in Claude Projects.
+All decisions are recorded here.
+
+---
+
+## Claude Code — Lead Programmer
+
+Role:
+- Lead Programmer
+- Technical Architecture
+- Code Review
+- GDScript / Godot 4 implementation
 
 ---
 
@@ -68,6 +74,58 @@ When Michał brings a ChatGPT suggestion to Claude:
 6. CHANGELOG.md
 7. REVIEW_LOG.md
 8. AI Memory
+
+---
+
+# Design Workflow
+
+The workflow between Claude and ChatGPT functions as a design review, not an expert consultation.
+
+Each brings a different perspective:
+- Claude evaluates through the lens of project consistency, architecture and documentation.
+- ChatGPT questions assumptions, proposes alternatives and seeks compromises.
+
+Combining these perspectives consistently leads to better decisions than using either source alone.
+
+## Standard Flow
+
+1. Topic is discussed with Claude
+2. Claude generates a ChatGPT consultation prompt in a code block
+3. Michał copies prompt and pastes ChatGPT response back to Claude
+4. Claude evaluates response and proposes documentation
+5. Michał makes final decision
+6. Claude documents accepted decisions
+
+Consultation can be skipped when Michał decides it is not needed.
+
+## When to Consult ChatGPT
+
+Consultations have the most value for:
+- Large mechanics
+- Architecture decisions
+- Economy systems
+- Multiplayer
+- Roadmap
+- Changes affecting multiple systems
+
+Do not consult for every small design decision.
+
+## Prompt Format
+
+ChatGPT prompts include:
+- Current topic and consultation goal
+- No general game context (ChatGPT has project files)
+- Topic-specific context if needed
+- Prompts are delivered in a code block for easy copying
+
+---
+
+# File Generation Standard
+
+When generating project files:
+- Deliver only the file itself
+- No surrounding text or explanation
+- File should be ready to download and save directly
 
 ---
 
@@ -310,8 +368,6 @@ Synchronization is complete only when:
 # End Of Session Checklist
 
 Verify:
-- New decisions documented in CHANGELOG
-- Rejected ideas documented in REVIEW_LOG
-- Relevant GDD files updated
-- CURRENT_STATUS.md updated to reflect completed topics and next focus
-- GitHub commit reminder given to Michał
+- New decisions documented
+- Required files updated
+- GitHub commit reminder needed

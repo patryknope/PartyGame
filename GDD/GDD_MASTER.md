@@ -16,3 +16,6 @@ Index document for PartyGame Game Design Documentation.
 - GDD_ITEMS.md
 - GDD_MINIGAMES.md
 - GDD_LOBBY.md
+- GDD_NETWORK.md
+- GDD_PRODUCTION.md
+- GDD_ARCHITECTURE.md
