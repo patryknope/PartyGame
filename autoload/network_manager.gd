@@ -17,6 +17,7 @@ signal code_rejected
 signal minigame_start_requested
 signal minigame_positions(positions: Dictionary)
 signal minigame_event(kind: String, data: Dictionary)
+signal lobby_updated(profiles: Dictionary)
 
 const PORT := 7777
 const MAX_CLIENTS := 3
@@ -26,6 +27,7 @@ var is_online := false
 var my_player_id := 0
 var peer_to_player := {}
 var join_code := ""
+var lobby_profiles := {}
 
 var _join_order: Array = []
 var _pending_peers := {}
@@ -97,9 +99,16 @@ func host_game() -> void:
     _join_order.clear()
     _pending_peers.clear()
     join_code = "%04d" % (randi() % 10000)
+    lobby_profiles = {1: _default_profile(0)}
     hosted.emit()
     network_players_changed.emit(player_count())
+    _broadcast_lobby()
     _start_upnp()
+
+
+func _default_profile(index: int) -> Dictionary:
+    var i: int = index % PlayerManager.PLAYER_COLORS.size()
+    return {"name": PlayerManager.PLAYER_NAMES[i], "color_index": i, "accessory": i, "ready": false}
 
 
 func join_game(address: String) -> void:
@@ -163,6 +172,7 @@ func leave_game() -> void:
     peer_to_player.clear()
     _join_order.clear()
     _pending_peers.clear()
+    lobby_profiles.clear()
     _close_upnp()
 
 
@@ -193,8 +203,10 @@ func _submit_code(code: String) -> void:
         multiplayer.multiplayer_peer.disconnect_peer(peer_id)
         return
     _join_order.append(peer_id)
+    lobby_profiles[peer_id] = _default_profile(_join_order.size())
     _code_accepted.rpc_id(peer_id)
     network_players_changed.emit(player_count())
+    _broadcast_lobby()
 
 
 @rpc("authority", "call_remote", "reliable")
@@ -213,7 +225,9 @@ func _on_peer_disconnected(peer_id: int) -> void:
         return
     _pending_peers.erase(peer_id)
     _join_order.erase(peer_id)
+    lobby_profiles.erase(peer_id)
     network_players_changed.emit(player_count())
+    _broadcast_lobby()
     # v1: no grace period yet — mid-match disconnect aborts the session
     # (GDD grace period 5 s / timeout 60 s is an Etap 2.1 task).
     if GameManager.state != GameManager.State.MAIN_MENU:
@@ -245,15 +259,85 @@ func start_network_match(rounds: int) -> void:
     peer_to_player = {1: 0}
     for i in _join_order.size():
         peer_to_player[_join_order[i]] = i + 1
-    _net_match_setup.rpc(peer_to_player, rounds)
-    GameManager.start_match(player_count(), rounds)
+    var indexed_profiles := {}
+    for peer_id in peer_to_player:
+        var index: int = peer_to_player[peer_id]
+        indexed_profiles[index] = lobby_profiles.get(peer_id, _default_profile(index))
+    _net_match_setup.rpc(peer_to_player, rounds, indexed_profiles)
+    GameManager.start_match(player_count(), rounds, indexed_profiles)
 
 
 @rpc("authority", "call_remote", "reliable")
-func _net_match_setup(mapping: Dictionary, _rounds: int) -> void:
+func _net_match_setup(mapping: Dictionary, _rounds: int, profiles: Dictionary) -> void:
     peer_to_player = mapping
     my_player_id = mapping[multiplayer.get_unique_id()]
-    PlayerManager.setup_players(mapping.size())
+    PlayerManager.setup_players(mapping.size(), profiles)
+
+
+# ── Lobby (pre-match roster, personalization, ready check) ────────
+
+func update_my_profile(name: String, color_index: int, accessory: int) -> void:
+    if not is_online:
+        return
+    if multiplayer.is_server():
+        _apply_profile(1, name, color_index, accessory)
+    else:
+        _submit_profile.rpc_id(1, name, color_index, accessory)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _submit_profile(name: String, color_index: int, accessory: int) -> void:
+    if not multiplayer.is_server():
+        return
+    _apply_profile(multiplayer.get_remote_sender_id(), name, color_index, accessory)
+
+
+func _apply_profile(peer_id: int, name: String, color_index: int, accessory: int) -> void:
+    if not lobby_profiles.has(peer_id):
+        return
+    var profile: Dictionary = lobby_profiles[peer_id]
+    var clean_name := name.strip_edges()
+    if clean_name != "":
+        profile["name"] = clean_name.left(16)
+    profile["color_index"] = clampi(color_index, 0, PlayerManager.PLAYER_COLORS.size() - 1)
+    profile["accessory"] = clampi(accessory, 0, 3)
+    profile["ready"] = false
+    _broadcast_lobby()
+
+
+func set_ready(ready: bool) -> void:
+    if not is_online:
+        return
+    if multiplayer.is_server():
+        _apply_ready(1, ready)
+    else:
+        _submit_ready.rpc_id(1, ready)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _submit_ready(ready: bool) -> void:
+    if not multiplayer.is_server():
+        return
+    _apply_ready(multiplayer.get_remote_sender_id(), ready)
+
+
+func _apply_ready(peer_id: int, ready: bool) -> void:
+    if not lobby_profiles.has(peer_id):
+        return
+    lobby_profiles[peer_id]["ready"] = ready
+    _broadcast_lobby()
+
+
+func _broadcast_lobby() -> void:
+    lobby_updated.emit(lobby_profiles)
+    if is_online and multiplayer.is_server():
+        _lobby_sync.rpc(lobby_profiles)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _lobby_sync(profiles: Dictionary) -> void:
+    lobby_profiles = profiles
+    lobby_updated.emit(profiles)
 
 
 # ── Client → host input requests ─────────────────────────────────

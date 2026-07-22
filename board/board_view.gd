@@ -401,7 +401,7 @@ func setup_pawns() -> void:
     for player in PlayerManager.players:
         var bear := BearCharacter.new()
         bear.base_color = player["color"]
-        bear.accessory = player["id"]
+        bear.accessory = player["accessory"]
         bear.scale = Vector2(0.85, 0.85)
         bear.position = _pawn_target(player["id"], BoardManager.START_TILE)
         add_child(bear)

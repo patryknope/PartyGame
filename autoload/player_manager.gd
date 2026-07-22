@@ -14,10 +14,21 @@ const PLAYER_NAMES: Array[String] = ["Czerwony", "Niebieski", "Zielony", "Zolty"
 var players: Array = []
 
 
-func setup_players(count: int) -> void:
+func setup_players(count: int, profiles: Dictionary = {}) -> void:
     players.clear()
     for i in count:
-        players.append({"id": i, "name": PLAYER_NAMES[i], "color": PLAYER_COLORS[i]})
+        var profile: Dictionary = profiles.get(i, {})
+        var color_index: int = int(profile.get("color_index", i)) % PLAYER_COLORS.size()
+        var accessory: int = int(profile.get("accessory", i)) % 4
+        var name := String(profile.get("name", ""))
+        if name == "":
+            name = PLAYER_NAMES[i]
+        players.append({
+            "id": i,
+            "name": name,
+            "color": PLAYER_COLORS[color_index],
+            "accessory": accessory,
+        })
 
 
 func get_player(player_id: int) -> Dictionary:

@@ -30,10 +30,10 @@ func _ready() -> void:
     MinigameManager.minigame_finished.connect(_on_minigame_finished)
 
 
-func start_match(player_count: int, rounds: int) -> void:
+func start_match(player_count: int, rounds: int, profiles: Dictionary = {}) -> void:
     total_rounds = rounds
     current_round = 1
-    PlayerManager.setup_players(player_count)
+    PlayerManager.setup_players(player_count, profiles)
     var ids := PlayerManager.get_player_ids()
     EconomyManager.reset(ids, STARTING_COINS)
     BoardManager.reset(ids)

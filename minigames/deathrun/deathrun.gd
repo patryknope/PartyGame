@@ -89,7 +89,7 @@ func _ready() -> void:
         runners.append(pid)
         var bear := BearCharacter.new()
         bear.base_color = PlayerManager.get_player(pid)["color"]
-        bear.accessory = pid
+        bear.accessory = PlayerManager.get_player(pid)["accessory"]
         bear.scale = Vector2(0.85, 0.85)
         bear.position = _start_position(pid)
         add_child(bear)
