@@ -6,6 +6,33 @@ signal minigame_finished(ranking: Array)
 
 const MINIGAMES: Array = [
     {
+        "id": "crumbling_arena",
+        "name": "Kruszaca Arena",
+        "category": "FFA",
+        "script": "res://minigames/crumbling_arena/crumbling_arena.gd",
+        "rules": "Podloga pod stopami pęka i znika!\nPomaranczowe plyty zaraz odpadna — uciekaj z nich.\nWpadniesz w dziure — odpadasz.\nOstatni gracz na nogach wygrywa.",
+        "min_players": 2,
+        "max_players": 4,
+    },
+    {
+        "id": "deadly_line",
+        "name": "Smiertelna Linia",
+        "category": "FFA",
+        "script": "res://minigames/deadly_line/deadly_line.gd",
+        "rules": "Zostawiasz za soba trwala linie.\nSkrecaj klawiszami kierunkow — bez zawracania!\nDotkniesz czyjejs linii, swojej albo sciany — koniec.\nOstatni na arenie wygrywa.",
+        "min_players": 2,
+        "max_players": 4,
+    },
+    {
+        "id": "deathrun",
+        "name": "Deathrun / Sabotazysta",
+        "category": "ONE_VS_ALL",
+        "script": "res://minigames/deathrun/deathrun.gd",
+        "rules": "Jeden gracz to SABOTAZYSTA — klika MYSZKA strefy pulapek.\nReszta biegnie klawiatura ze startu do mety.\nZolta strefa zaraz wybuchnie, czerwona cofa na start!\nMeta = wygrana biegaczy, sabotazysta wygrywa gdy zatrzyma wiekszosc.",
+        "min_players": 2,
+        "max_players": 4,
+    },
+    {
         "id": "color_chaos",
         "name": "Kolorowy Chaos",
         "script": "res://minigames/color_chaos/color_chaos.gd",
