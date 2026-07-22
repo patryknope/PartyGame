@@ -15,8 +15,11 @@ const TYPE_COLORS := {
     "red": Color(0.86, 0.3, 0.32),
     "neutral": Color(0.55, 0.56, 0.62),
     "shop": Color(0.62, 0.4, 0.85),
+    "cards": Color(0.15, 0.5, 0.44),
 }
-const TYPE_ICONS := {"start": "GO", "blue": "+10", "red": "-5", "neutral": "", "shop": "SKLEP"}
+const TYPE_ICONS := {
+    "start": "GO", "blue": "+10", "red": "-5", "neutral": "", "shop": "SKLEP", "cards": "KARTY",
+}
 const PAWN_OFFSETS: Array[Vector2] = [
     Vector2(-24, 4), Vector2(24, 4), Vector2(-9, 18), Vector2(9, 18),
 ]
@@ -92,6 +95,8 @@ func _ready() -> void:
     BuildingManager.building_changed.connect(_on_building_changed)
     BuildingManager.buildings_reset.connect(_on_buildings_reset)
     BuildingManager.income_granted.connect(_on_income_granted)
+    CasinoManager.poker_finished.connect(_on_poker_finished)
+    GameManager.jackpot_result.connect(_on_jackpot_result)
 
     var scenery := Scenery.new()
     scenery.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -351,3 +356,25 @@ func _on_buildings_reset() -> void:
     for marker in _building_markers.values():
         marker.queue_free()
     _building_markers.clear()
+
+
+func _on_poker_finished(player_id: int, _hand: Array, hand_name: String, payout: int) -> void:
+    if payout > 0:
+        _popup(player_id, "%s +%d" % [hand_name, payout], UiStyle.GOLD)
+        _emote(player_id, "star" if payout >= 25 else "happy")
+    else:
+        _popup(player_id, hand_name, Color(0.8, 0.8, 0.85))
+        _emote(player_id, "sad")
+
+
+func _on_jackpot_result(player_id: int, kind: String, value: int) -> void:
+    match kind:
+        "jackpot":
+            _popup(player_id, "JACKPOT +%d" % value, UiStyle.GOLD)
+            _emote(player_id, "star")
+        "extra_roll":
+            _popup(player_id, "EXTRA RZUT!", UiStyle.GOLD)
+            _emote(player_id, "happy")
+        "bust":
+            _popup(player_id, "BUST -%d" % value, Color(0.95, 0.4, 0.4))
+            _emote(player_id, "shock")

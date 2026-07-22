@@ -11,7 +11,7 @@
     { "id": 7, "type": "shop", "coins": 0, "ring": 7, "next": [8] },
     { "id": 8, "type": "red", "coins": -5, "ring": 8, "next": [9] },
     { "id": 9, "type": "blue", "coins": 10, "ring": 9, "next": [10] },
-    { "id": 10, "type": "neutral", "coins": 0, "ring": 10, "next": [11] },
+    { "id": 10, "type": "cards", "coins": 0, "ring": 10, "next": [11] },
     { "id": 11, "type": "blue", "coins": 10, "ring": 11, "next": [12] },
     { "id": 12, "type": "red", "coins": -5, "ring": 12, "next": [13] },
     { "id": 13, "type": "neutral", "coins": 0, "ring": 13, "next": [14] },
@@ -22,7 +22,7 @@
     { "id": 18, "type": "blue", "coins": 10, "ring": 18, "next": [19] },
     { "id": 19, "type": "red", "coins": -5, "ring": 19, "next": [0] },
     { "id": 20, "type": "red", "coins": -5, "between": [4, 13, 1, 5], "next": [21] },
-    { "id": 21, "type": "neutral", "coins": 0, "between": [4, 13, 2, 5], "next": [22] },
+    { "id": 21, "type": "cards", "coins": 0, "between": [4, 13, 2, 5], "next": [22] },
     { "id": 22, "type": "red", "coins": -5, "between": [4, 13, 3, 5], "next": [23] },
     { "id": 23, "type": "red", "coins": -5, "between": [4, 13, 4, 5], "next": [13] }
   ]

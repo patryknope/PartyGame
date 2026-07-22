@@ -45,6 +45,24 @@ not in GDD_MINIGAMES, which deliberately stays board-neutral per the rule
 "core does not know board specifics". Future boards will have their own team
 assignment mechanics.
 
+## Poker Tables
+Poker is the second gambling mechanic of the Casino board (after Roulette).
+
+KARTY tiles host a Dealer-run video-poker table:
+- Landing on a KARTY tile deals the player 5 cards
+- The player picks cards to hold and gets one redraw
+- Payout depends on the final poker hand (prototype table:
+  pair 3, two pair 8, trips 15, straight 25, flush 30,
+  full house 40, quads 60, straight flush 100)
+- Playing is free — the "stake" is the tile itself
+
+A dedicated FFA minigame (Poker Draw) also exists — see GDD_MINIGAMES.
+
+Open Questions:
+- Final payout table
+- Should poker cost a stake to play?
+- Interaction with future Dealer Events
+
 ## Dealer
 The Dealer acts as the board controller — not a player, but a board mechanic.
 

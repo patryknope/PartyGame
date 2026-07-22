@@ -23,6 +23,14 @@ const MINIGAMES: Array = [
         "max_players": 4,
     },
     {
+        "id": "poker_draw",
+        "name": "Poker Draw",
+        "script": "res://minigames/poker_draw/poker_draw.gd",
+        "rules": "Kazdy gracz dostaje 5 kart i jedna wymiane.\nKliknij karty, ktore zatrzymujesz, reszta idzie do wymiany.\nNajlepszy uklad pokerowy wygrywa!",
+        "min_players": 2,
+        "max_players": 4,
+    },
+    {
         "id": "crown_steal",
         "name": "Kradziez Korony",
         "script": "res://minigames/crown_steal/crown_steal.gd",

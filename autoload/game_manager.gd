@@ -8,6 +8,7 @@ enum State { MAIN_MENU, PLAYER_TURN, PLAYER_MOVE, MINIGAME, MATCH_END }
 signal state_changed(new_state: int)
 signal round_started(round_number: int)
 signal dice_rolled(player_id: int, result: int)
+signal jackpot_result(player_id: int, kind: String, value: int)
 signal minigame_rewards_granted(ranking: Array, rewards: Array)
 signal match_ended(final_ranking: Array)
 
@@ -49,10 +50,42 @@ func roll_dice(dice_index: int = 0) -> void:
     if state != State.PLAYER_TURN:
         return
     var player_id := TurnManager.current_player_id()
-    last_roll = Dice.roll(Dice.TYPES[dice_index]["faces"])
-    dice_rolled.emit(player_id, last_roll)
+    var dice: Dictionary = Dice.TYPES[dice_index]
+    if dice["id"] == "jackpot":
+        _roll_jackpot(player_id, dice)
+        return
+    _begin_roll(player_id, Dice.roll(dice["faces"]))
+
+
+func _begin_roll(player_id: int, steps: int) -> void:
+    last_roll = steps
+    dice_rolled.emit(player_id, steps)
     _set_state(State.PLAYER_MOVE)
-    BoardManager.begin_move(player_id, last_roll)
+    BoardManager.begin_move(player_id, steps)
+
+
+func _roll_jackpot(player_id: int, dice: Dictionary) -> void:
+    # Faces: 1-8 + Jackpot + Bust (GDD_DICE). Outcome tables are
+    # prototype placeholders (open question in the GDD).
+    var face := randi() % 10
+    if face < 8:
+        _begin_roll(player_id, dice["faces"][face])
+        return
+    if face == 8:
+        if randf() < 0.3:
+            var extra := Dice.roll(Dice.TYPES[0]["faces"])
+            jackpot_result.emit(player_id, "extra_roll", extra)
+            _begin_roll(player_id, extra)
+        else:
+            var reward := 2 + randi() % 4
+            EconomyManager.add_coins(player_id, reward)
+            jackpot_result.emit(player_id, "jackpot", reward)
+            _begin_roll(player_id, 0)
+    else:
+        var penalty := 3 + randi() % 6
+        EconomyManager.add_coins(player_id, -penalty)
+        jackpot_result.emit(player_id, "bust", penalty)
+        _begin_roll(player_id, 0)
 
 
 func local_can_act(player_id: int) -> bool:
@@ -129,9 +162,17 @@ func roll_pair() -> Array:
     return [Dice.roll(faces), Dice.roll(faces)]
 
 
+func request_poker(held_indexes: Array) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("poker_redraw", [held_indexes])
+    else:
+        CasinoManager.redraw(held_indexes)
+
+
 func end_turn() -> void:
     if state != State.PLAYER_TURN:
         return
+    CasinoManager.cancel()
     TurnManager.end_turn()
 
 
@@ -157,10 +198,13 @@ func _on_move_finished(player_id: int) -> void:
         BoardManager.resolve_tile(player_id)
         var tile_id: int = BoardManager.positions[player_id]
         ItemManager.trigger_trap(player_id, tile_id)
-        if BoardManager.get_tile(tile_id)["type"] == "shop":
-            ItemManager.open_shop(player_id)
-        else:
-            BuildingManager.consider_offer(player_id, tile_id)
+        match String(BoardManager.get_tile(tile_id)["type"]):
+            "shop":
+                ItemManager.open_shop(player_id)
+            "cards":
+                CasinoManager.start_poker(player_id)
+            _:
+                BuildingManager.consider_offer(player_id, tile_id)
     _set_state(State.PLAYER_TURN)
 
 

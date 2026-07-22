@@ -507,3 +507,30 @@ v1 limitations (documented in STEAM.md):
   60 s and reconnect are Etap 2.1 tasks)
 - Online minigame pool: Kolorowy Chaos (other two remain hotseat-only)
 - Extra Roll and Loaded Dice disabled online for now
+
+---
+
+### IMPLEMENTED
+
+Poker elements + full canon dice set.
+
+Poker (Casino mechanic, lives in board/casino/ per architecture rule):
+- KARTY tiles on the board (one on the ring, one on the shortcut):
+  landing deals 5 cards, player holds and redraws once, payout by hand
+  (video-poker; free to play, prototype payout table in GDD_CASINO)
+- New FFA minigame: Poker Draw — every player gets 5 cards + one
+  redraw, best hand wins (hotseat; minigame pool is now 4)
+- Shared core: PlayingCards (52-card deck + 5-card hand evaluator)
+  and CardNode (clickable vector-drawn card UI)
+- Poker works online too: hand relayed to the acting client, redraw
+  request validated by the host
+
+Dice (GDD_DICE canon additions):
+- Podrozna / Travel Dice (2 2 4 4 8 8 10 10)
+- JACKPOT Dice (1-8 + Jackpot + Bust): Jackpot = +2-5 coins (70%) or
+  an extra Basic roll (30%); Bust = -3-8 coins; outcome tables are
+  prototype placeholders per the GDD open question
+- Dice picker now offers 5 dice each turn
+
+Docs: GDD_CASINO got a Poker Tables section; GDD_MINIGAMES got the
+Poker Draw candidate and the board-neutrality note.

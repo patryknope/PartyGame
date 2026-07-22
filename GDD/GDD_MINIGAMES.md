@@ -80,6 +80,11 @@ Każdy gracz kontroluje punkt który zostawia za sobą trwały ślad.
 Ślady tworzą ściany — dotknięcie czyjejś linii lub własnej kończy grę dla tego gracza.
 Arena stopniowo się zapełnia aż do wyłonienia ostatniego gracza.
 
+#### Poker Draw
+Każdy gracz otrzymuje 5 kart i jedną wymianę.
+Najlepszy układ pokerowy wygrywa.
+Zaimplementowana w prototypie (hotseat).
+
 ---
 
 ### TEAM_EVEN
@@ -160,3 +165,9 @@ Pozostali próbują go wyeliminować.
 - Czy kategorie drużynowe wspierają asymetryczne składy narzucane przez mechanikę
   planszy (np. 2v4, 1v5) — TEAM_EVEN zakłada równe drużyny, ONE_VS_ALL dokładnie
   1 vs reszta; niespójność zgłoszona przez GDD_CASINO (kolory Ruletki → drużyny)
+
+## Uwaga
+
+Mechanika przydziału drużyn na podstawie kolorów Ruletki (Casino) jest opisana
+osobno w GDD_CASINO — ten dokument (GDD_MINIGAMES) pozostaje neutralny względem
+plansz.

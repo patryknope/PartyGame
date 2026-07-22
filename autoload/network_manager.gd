@@ -171,6 +171,8 @@ func _request(kind: String, args: Array) -> void:
             BuildingManager.confirm()
         "build_skip":
             BuildingManager.skip()
+        "poker_redraw":
+            CasinoManager.redraw(args[0])
 
 
 # ── Host → clients event relay ───────────────────────────────────
@@ -203,6 +205,9 @@ func _connect_relays() -> void:
     BuildingManager.building_changed.connect(func(a, b, c): _relay("building_changed", [a, b, c]))
     BuildingManager.buildings_reset.connect(func(): _relay("buildings_reset", []))
     BuildingManager.income_granted.connect(func(a, b): _relay("income_granted", [a, b]))
+    CasinoManager.poker_started.connect(func(a, b): _relay("poker_started", [a, b]))
+    CasinoManager.poker_finished.connect(func(a, b, c, d): _relay("poker_finished", [a, b, c, d]))
+    GameManager.jackpot_result.connect(func(a, b, c): _relay("jackpot_result", [a, b, c]))
 
 
 func _relay(event: String, args: Array) -> void:
@@ -309,6 +314,12 @@ func _reemit(event: String, args: Array) -> void:
             BuildingManager.buildings_reset.emit()
         "income_granted":
             BuildingManager.income_granted.emit(args[0], args[1])
+        "poker_started":
+            CasinoManager.poker_started.emit(args[0], args[1])
+        "poker_finished":
+            CasinoManager.poker_finished.emit(args[0], args[1], args[2], args[3])
+        "jackpot_result":
+            GameManager.jackpot_result.emit(args[0], args[1], args[2])
 
 
 # ── Minigame networking ──────────────────────────────────────────

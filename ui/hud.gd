@@ -43,6 +43,9 @@ func _ready() -> void:
     BuildingManager.build_offer.connect(_on_build_offer)
     BuildingManager.upgrade_offer.connect(_on_upgrade_offer)
     BuildingManager.income_granted.connect(_on_income_status)
+    CasinoManager.poker_started.connect(_on_poker_started)
+    CasinoManager.poker_finished.connect(_on_poker_finished)
+    GameManager.jackpot_result.connect(_on_jackpot_status)
 
 
 func _build() -> void:
@@ -94,13 +97,14 @@ func _build() -> void:
     action_bar.add_child(status_label)
 
     dice_box = HBoxContainer.new()
-    dice_box.position = Vector2(96, 46)
-    dice_box.add_theme_constant_override("separation", 14)
+    dice_box.position = Vector2(20, 46)
+    dice_box.add_theme_constant_override("separation", 8)
     dice_box.visible = false
     for i in Dice.TYPES.size():
         var dice_button := Button.new()
         dice_button.text = Dice.TYPES[i]["name"]
-        dice_button.custom_minimum_size = Vector2(152, 44)
+        dice_button.custom_minimum_size = Vector2(122, 44)
+        dice_button.add_theme_font_size_override("font_size", 14)
         dice_button.pressed.connect(_on_dice_pressed.bind(i))
         dice_box.add_child(dice_button)
     action_bar.add_child(dice_box)
@@ -539,3 +543,55 @@ func _on_income_status(player_id: int, amount: int) -> void:
     status_label.text = "%s dostaje +%d monet z budynku" % [
         PlayerManager.get_player(player_id)["name"], amount,
     ]
+
+
+func _on_poker_started(player_id: int, hand: Array) -> void:
+    var player := PlayerManager.get_player(player_id)
+    status_label.text = "%s siada do pokera!" % player["name"]
+    if not GameManager.local_can_act(player_id):
+        return
+    _open_side_panel("Poker!")
+    var hint := Label.new()
+    hint.text = "Kliknij karty, ktore trzymasz."
+    hint.add_theme_font_size_override("font_size", 14)
+    hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    side_box.add_child(hint)
+    var cards_row := HBoxContainer.new()
+    cards_row.add_theme_constant_override("separation", -14)
+    var card_nodes: Array = []
+    for i in hand.size():
+        var card_node := CardNode.new()
+        card_node.card = hand[i]
+        card_node.index = i
+        cards_row.add_child(card_node)
+        card_nodes.append(card_node)
+    side_box.add_child(cards_row)
+    _side_button("Wymien i sprawdz!", _on_poker_redraw_pressed.bind(card_nodes))
+
+
+func _on_poker_redraw_pressed(card_nodes: Array) -> void:
+    var held: Array = []
+    for card_node in card_nodes:
+        if card_node.held:
+            held.append(card_node.index)
+    _close_side_panel()
+    GameManager.request_poker(held)
+
+
+func _on_poker_finished(player_id: int, _hand: Array, hand_name: String, payout: int) -> void:
+    var player := PlayerManager.get_player(player_id)
+    if payout > 0:
+        status_label.text = "%s: %s! Wygrywa %d monet" % [player["name"], hand_name, payout]
+    else:
+        status_label.text = "%s: %s — bez wygranej" % [player["name"], hand_name]
+
+
+func _on_jackpot_status(player_id: int, kind: String, value: int) -> void:
+    var player := PlayerManager.get_player(player_id)
+    match kind:
+        "jackpot":
+            status_label.text = "%s krzyczy JACKPOT! +%d monet" % [player["name"], value]
+        "extra_roll":
+            status_label.text = "%s: JACKPOT — extra rzut: %d!" % [player["name"], value]
+        "bust":
+            status_label.text = "%s: BUST! -%d monet" % [player["name"], value]

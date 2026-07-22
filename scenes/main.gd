@@ -217,7 +217,9 @@ func _screenshot_run() -> void:
     GameManager.roll_dice()
     await get_tree().create_timer(1.2).timeout
     await _capture("board_move")
-    MinigameManager.select_minigame(4)
+    for minigame in MinigameManager.MINIGAMES:
+        if minigame["id"] == "poker_draw":
+            MinigameManager.current = minigame
     _start_minigame()
     await get_tree().create_timer(1.2).timeout
     await _capture("minigame")
@@ -274,6 +276,9 @@ func _setup_net_drivers() -> void:
     BuildingManager.upgrade_offer.connect(
         func(pid, _t, _c, _l): if GameManager.local_can_act(pid): GameManager.request_building.call_deferred(true)
     )
+    CasinoManager.poker_started.connect(
+        func(pid, _h): if GameManager.local_can_act(pid): GameManager.request_poker.call_deferred([0, 1])
+    )
 
 
 func _net_autotest_on_players(count: int) -> void:
@@ -320,6 +325,9 @@ func _setup_autotest() -> void:
         func(_ranking, _rewards): GameManager.continue_after_minigame.call_deferred()
     )
     TrophyManager.trophy_offer.connect(func(_pid, _cost): TrophyManager.buy.call_deferred())
+    CasinoManager.poker_started.connect(
+        func(_pid, _hand): CasinoManager.redraw.call_deferred([0, 1, 2, 3, 4])
+    )
     ItemManager.shop_opened.connect(_autotest_on_shop)
     BuildingManager.build_offer.connect(
         func(_pid, _tile, _cost): BuildingManager.confirm.call_deferred()
