@@ -45,14 +45,13 @@ var round_label: Label
 
 
 func _ready() -> void:
-    var background := ColorRect.new()
-    background.color = Color(0.08, 0.08, 0.12)
+    var background := Scenery.new()
     background.set_anchors_preset(Control.PRESET_FULL_RECT)
     add_child(background)
 
     var frame := Panel.new()
     frame.add_theme_stylebox_override(
-        "panel", UiStyle.flat(Color(0.05, 0.05, 0.08), 24, 4, UiStyle.GOLD_DARK, 10)
+        "panel", UiStyle.flat(Color(0.15, 0.36, 0.2), 24, 6, Color(0.11, 0.28, 0.15), 10)
     )
     frame.position = ARENA.position - Vector2(16, 16)
     frame.size = ARENA.size + Vector2(32, 32)
@@ -107,15 +106,12 @@ func _build_cells() -> void:
 func _spawn_players() -> void:
     for player in PlayerManager.players:
         var pid: int = player["id"]
-        var pawn := Panel.new()
-        pawn.add_theme_stylebox_override(
-            "panel", UiStyle.circle(player["color"], 3, Color(1, 1, 1, 0.95), 6)
-        )
-        pawn.size = PLAYER_SIZE
-        pawn.pivot_offset = PLAYER_SIZE / 2.0
-        pawn.position = ARENA.get_center() + SPAWN_OFFSETS[pid] - PLAYER_SIZE / 2.0
-        add_child(pawn)
-        player_nodes[pid] = pawn
+        var bear := BearCharacter.new()
+        bear.base_color = player["color"]
+        bear.scale = Vector2(0.9, 0.9)
+        bear.position = ARENA.get_center() + SPAWN_OFFSETS[pid]
+        add_child(bear)
+        player_nodes[pid] = bear
         alive[pid] = true
 
 
@@ -164,13 +160,16 @@ func _process(delta: float) -> void:
             direction.x -= 1
         if Input.is_physical_key_pressed(keys[3]):
             direction.x += 1
+        var node: BearCharacter = player_nodes[pid]
         if direction != Vector2.ZERO:
-            var node: Panel = player_nodes[pid]
             node.position += direction.normalized() * SPEED * delta
             node.position = node.position.clamp(
-                ARENA.position,
-                ARENA.position + ARENA.size - PLAYER_SIZE
+                ARENA.position + Vector2(18, 50),
+                ARENA.position + ARENA.size - Vector2(18, 6)
             )
+            node.rotation = sin(Time.get_ticks_msec() / 1000.0 * 15.0 + pid) * 0.09
+        else:
+            node.rotation = lerpf(node.rotation, 0.0, 12.0 * delta)
     timer -= delta
     timer_bar.size.x = 600.0 * maxf(timer, 0.0) / round_time
     if timer <= 0.0:
@@ -182,17 +181,17 @@ func _judge() -> void:
     for pid in player_nodes:
         if not alive[pid]:
             continue
-        var center: Vector2 = player_nodes[pid].position + PLAYER_SIZE / 2.0
-        var col := clampi(int((center.x - ARENA.position.x) / (ARENA.size.x / COLS)), 0, COLS - 1)
-        var row := clampi(int((center.y - ARENA.position.y) / (ARENA.size.y / ROWS)), 0, ROWS - 1)
+        var feet: Vector2 = player_nodes[pid].position
+        var col := clampi(int((feet.x - ARENA.position.x) / (ARENA.size.x / COLS)), 0, COLS - 1)
+        var row := clampi(int((feet.y - ARENA.position.y) / (ARENA.size.y / ROWS)), 0, ROWS - 1)
         if cell_colors[row * COLS + col] != target:
             alive[pid] = false
             elimination_order.append(pid)
-            var pawn: Panel = player_nodes[pid]
+            var pawn: BearCharacter = player_nodes[pid]
             var fall := create_tween()
             fall.set_parallel()
-            fall.tween_property(pawn, "modulate:a", 0.2, 0.5)
-            fall.tween_property(pawn, "rotation", PI, 0.5)
+            fall.tween_property(pawn, "modulate:a", 0.25, 0.5)
+            fall.tween_property(pawn, "rotation", PI / 2.0, 0.5)
             fall.tween_property(pawn, "scale", Vector2(0.6, 0.6), 0.5)
     for i in cells.size():
         if cell_colors[i] != target:
@@ -239,7 +238,7 @@ func _finish() -> void:
         confetti.scale_amount_min = 2.5
         confetti.scale_amount_max = 5.0
         confetti.color = UiStyle.GOLD
-        confetti.position = player_nodes[ranking[0]].position + PLAYER_SIZE / 2.0
+        confetti.position = player_nodes[ranking[0]].position - Vector2(0, 26)
         confetti.emitting = true
         add_child(confetti)
     await get_tree().create_timer(1.6).timeout

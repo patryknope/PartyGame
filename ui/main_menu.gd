@@ -9,14 +9,15 @@ var rounds_option: OptionButton
 
 
 func _ready() -> void:
-    for i in 14:
-        var glow := Panel.new()
-        var color := UiStyle.GOLD if i % 3 == 0 else UiStyle.FELT_LIGHT.lightened(0.1)
-        glow.add_theme_stylebox_override("panel", UiStyle.circle(Color(color.r, color.g, color.b, 0.1)))
-        var diameter := 60.0 + (i * 37) % 160
-        glow.size = Vector2(diameter, diameter)
-        glow.position = Vector2((i * 331) % 1220, (i * 197) % 660)
-        add_child(glow)
+    var background := Scenery.new()
+    background.set_anchors_preset(Control.PRESET_FULL_RECT)
+    add_child(background)
+
+    var dim := ColorRect.new()
+    dim.color = Color(0, 0, 0, 0.22)
+    dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+    dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(dim)
 
     var title := Label.new()
     title.text = "PartyGame"

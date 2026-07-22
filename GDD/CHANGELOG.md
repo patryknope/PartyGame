@@ -350,3 +350,20 @@ Open Questions Resolved:
 - Manager list for Etap 1: GameManager, PlayerManager, TurnManager, EconomyManager, BoardManager, MinigameManager
 - Basic board scope: 20-tile loop + 1 shortcut (4 tiles)
 - Claude Code configuration: works directly on repo files, validates via headless autotest
+
+---
+
+### IMPLEMENTED
+
+Prototype art pass 2: landscape map and animated bear characters.
+
+Scope:
+- Scenery layer (board/scenery.gd): sky, sun, snow-capped mountains, meadow with hills, pond, pine/deciduous trees, flowers, drifting clouds
+- Board path rendered as a real road (border, fill, dashed center line), loop + shortcut
+- BearCharacter (players/bear_character.gd): vector-drawn bear mascot in player colors — idle bobbing, blinking, hop movement animation, gold highlight ring for the active player
+- Bears replace circle pawns on the board and in Kolorowy Chaos (walk wobble, fall-over elimination)
+- Main menu and minigame share the landscape background
+
+Design Notes:
+- Matches the Cartoon Mascots character direction (2D stand-in until the 3D Low Poly pipeline starts)
+- All art is engine-drawn vectors — zero external sprites; Fredoka font remains the only binary asset
