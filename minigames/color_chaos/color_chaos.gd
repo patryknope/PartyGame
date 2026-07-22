@@ -5,10 +5,10 @@ extends Control
 # timer runs out. Standing on a wrong color eliminates you.
 
 const CHAOS_COLORS: Array[Color] = [
-    Color(0.85, 0.3, 0.3),
-    Color(0.3, 0.5, 0.9),
-    Color(0.32, 0.75, 0.35),
-    Color(0.93, 0.8, 0.25),
+    Color(0.86, 0.3, 0.32),
+    Color(0.27, 0.52, 0.9),
+    Color(0.3, 0.75, 0.36),
+    Color(0.95, 0.78, 0.25),
 ]
 const COLOR_NAMES: Array[String] = ["CZERWONY", "NIEBIESKI", "ZIELONY", "ZOLTY"]
 const KEY_SETS: Array = [
@@ -17,10 +17,10 @@ const KEY_SETS: Array = [
     [KEY_T, KEY_G, KEY_F, KEY_H],
     [KEY_I, KEY_K, KEY_J, KEY_L],
 ]
-const ARENA := Rect2(140, 150, 1000, 480)
+const ARENA := Rect2(140, 160, 1000, 470)
 const COLS := 10
 const ROWS := 6
-const PLAYER_SIZE := Vector2(26, 26)
+const PLAYER_SIZE := Vector2(30, 30)
 const SPEED := 320.0
 const MAX_ROUNDS := 8
 const SPAWN_OFFSETS: Array[Vector2] = [
@@ -35,34 +35,57 @@ var elimination_order: Array = []
 var round_num := 0
 var target := 0
 var timer := 0.0
+var round_time := 3.4
 var phase := "idle"
 
-var info_label: Label
-var timer_label: Label
+var banner: Panel
+var banner_label: Label
+var timer_bar: Panel
+var round_label: Label
 
 
 func _ready() -> void:
     var background := ColorRect.new()
-    background.color = Color(0.09, 0.09, 0.13)
+    background.color = Color(0.08, 0.08, 0.12)
     background.set_anchors_preset(Control.PRESET_FULL_RECT)
     add_child(background)
 
+    var frame := Panel.new()
+    frame.add_theme_stylebox_override(
+        "panel", UiStyle.flat(Color(0.05, 0.05, 0.08), 24, 4, UiStyle.GOLD_DARK, 10)
+    )
+    frame.position = ARENA.position - Vector2(16, 16)
+    frame.size = ARENA.size + Vector2(32, 32)
+    add_child(frame)
+
+    banner = Panel.new()
+    banner.position = Vector2(340, 24)
+    banner.size = Vector2(600, 74)
+    add_child(banner)
+
+    banner_label = Label.new()
+    banner_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+    banner_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    banner_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    UiStyle.title_look(banner_label, 30, Color.WHITE)
+    banner.add_child(banner_label)
+
+    timer_bar = Panel.new()
+    timer_bar.add_theme_stylebox_override("panel", UiStyle.flat(UiStyle.GOLD, 4))
+    timer_bar.position = Vector2(340, 104)
+    timer_bar.size = Vector2(600, 10)
+    add_child(timer_bar)
+
+    round_label = Label.new()
+    round_label.position = Vector2(60, 40)
+    UiStyle.title_look(round_label, 24, UiStyle.CREAM)
+    add_child(round_label)
+
     var title := Label.new()
     title.text = "Kolorowy Chaos"
-    title.add_theme_font_size_override("font_size", 28)
-    title.position = Vector2(140, 20)
+    UiStyle.title_look(title, 22, Color(1, 1, 1, 0.7))
+    title.position = Vector2(1010, 44)
     add_child(title)
-
-    info_label = Label.new()
-    info_label.add_theme_font_size_override("font_size", 30)
-    info_label.position = Vector2(140, 70)
-    info_label.size = Vector2(800, 40)
-    add_child(info_label)
-
-    timer_label = Label.new()
-    timer_label.add_theme_font_size_override("font_size", 40)
-    timer_label.position = Vector2(1060, 55)
-    add_child(timer_label)
 
     _build_cells()
     _spawn_players()
@@ -73,9 +96,9 @@ func _build_cells() -> void:
     var cell_size := Vector2(ARENA.size.x / COLS, ARENA.size.y / ROWS)
     for row in ROWS:
         for col in COLS:
-            var cell := ColorRect.new()
-            cell.position = ARENA.position + Vector2(col * cell_size.x, row * cell_size.y) + Vector2(2, 2)
-            cell.size = cell_size - Vector2(4, 4)
+            var cell := Panel.new()
+            cell.position = ARENA.position + Vector2(col * cell_size.x, row * cell_size.y) + Vector2(3, 3)
+            cell.size = cell_size - Vector2(6, 6)
             add_child(cell)
             cells.append(cell)
             cell_colors.append(0)
@@ -84,29 +107,44 @@ func _build_cells() -> void:
 func _spawn_players() -> void:
     for player in PlayerManager.players:
         var pid: int = player["id"]
-        var outline := ColorRect.new()
-        outline.color = Color(0.05, 0.05, 0.05)
-        outline.size = PLAYER_SIZE
-        outline.position = ARENA.get_center() + SPAWN_OFFSETS[pid] - PLAYER_SIZE / 2.0
-        var fill := ColorRect.new()
-        fill.color = player["color"]
-        fill.size = PLAYER_SIZE - Vector2(6, 6)
-        fill.position = Vector2(3, 3)
-        outline.add_child(fill)
-        add_child(outline)
-        player_nodes[pid] = outline
+        var pawn := Panel.new()
+        pawn.add_theme_stylebox_override(
+            "panel", UiStyle.circle(player["color"], 3, Color(1, 1, 1, 0.95), 6)
+        )
+        pawn.size = PLAYER_SIZE
+        pawn.pivot_offset = PLAYER_SIZE / 2.0
+        pawn.position = ARENA.get_center() + SPAWN_OFFSETS[pid] - PLAYER_SIZE / 2.0
+        add_child(pawn)
+        player_nodes[pid] = pawn
         alive[pid] = true
+
+
+func _paint_cell(index: int, dimmed: bool) -> void:
+    var color := CHAOS_COLORS[cell_colors[index]]
+    if dimmed:
+        color = color.darkened(0.72)
+    cells[index].add_theme_stylebox_override(
+        "panel", UiStyle.flat(color, 10, 2, color.lightened(0.25) if not dimmed else color)
+    )
 
 
 func _start_round() -> void:
     round_num += 1
     for i in cells.size():
         cell_colors[i] = randi() % CHAOS_COLORS.size()
-        cells[i].color = CHAOS_COLORS[cell_colors[i]]
+        _paint_cell(i, false)
     target = randi() % CHAOS_COLORS.size()
-    info_label.text = "Runda %d — stan na: %s" % [round_num, COLOR_NAMES[target]]
-    info_label.add_theme_color_override("font_color", CHAOS_COLORS[target])
-    timer = clampf(3.4 - 0.25 * round_num, 1.2, 3.4)
+    round_label.text = "Runda %d" % round_num
+    banner_label.text = "Stan na: %s" % COLOR_NAMES[target]
+    banner.add_theme_stylebox_override(
+        "panel", UiStyle.flat(CHAOS_COLORS[target].darkened(0.15), 16, 3, Color(1, 1, 1, 0.85), 8)
+    )
+    var pulse := create_tween()
+    pulse.tween_property(banner, "scale", Vector2(1.04, 1.04), 0.12)
+    pulse.tween_property(banner, "scale", Vector2.ONE, 0.12)
+    banner.pivot_offset = banner.size / 2.0
+    round_time = clampf(3.4 - 0.25 * round_num, 1.2, 3.4)
+    timer = round_time
     phase = "move"
 
 
@@ -127,14 +165,14 @@ func _process(delta: float) -> void:
         if Input.is_physical_key_pressed(keys[3]):
             direction.x += 1
         if direction != Vector2.ZERO:
-            var node: ColorRect = player_nodes[pid]
+            var node: Panel = player_nodes[pid]
             node.position += direction.normalized() * SPEED * delta
             node.position = node.position.clamp(
                 ARENA.position,
                 ARENA.position + ARENA.size - PLAYER_SIZE
             )
     timer -= delta
-    timer_label.text = "%.1f" % maxf(timer, 0.0)
+    timer_bar.size.x = 600.0 * maxf(timer, 0.0) / round_time
     if timer <= 0.0:
         _judge()
 
@@ -150,10 +188,15 @@ func _judge() -> void:
         if cell_colors[row * COLS + col] != target:
             alive[pid] = false
             elimination_order.append(pid)
-            player_nodes[pid].modulate.a = 0.25
+            var pawn: Panel = player_nodes[pid]
+            var fall := create_tween()
+            fall.set_parallel()
+            fall.tween_property(pawn, "modulate:a", 0.2, 0.5)
+            fall.tween_property(pawn, "rotation", PI, 0.5)
+            fall.tween_property(pawn, "scale", Vector2(0.6, 0.6), 0.5)
     for i in cells.size():
         if cell_colors[i] != target:
-            cells[i].color = cells[i].color.darkened(0.65)
+            _paint_cell(i, true)
     var alive_count := 0
     for pid in alive:
         if alive[pid]:
@@ -174,10 +217,30 @@ func _finish() -> void:
     var eliminated := elimination_order.duplicate()
     eliminated.reverse()
     ranking.append_array(eliminated)
-    var winner_text := "Remis!"
-    if not ranking.is_empty():
-        winner_text = "Wygrywa: %s!" % PlayerManager.get_player(ranking[0])["name"]
-    info_label.text = winner_text
-    info_label.add_theme_color_override("font_color", Color.WHITE)
-    await get_tree().create_timer(1.2).timeout
+
+    banner.add_theme_stylebox_override(
+        "panel", UiStyle.flat(UiStyle.CARD, 16, 3, UiStyle.GOLD, 8)
+    )
+    if ranking.is_empty():
+        banner_label.text = "Remis!"
+    else:
+        var winner := PlayerManager.get_player(ranking[0])
+        banner_label.text = "Wygrywa: %s!" % winner["name"]
+        var confetti := CPUParticles2D.new()
+        confetti.amount = 140
+        confetti.lifetime = 1.4
+        confetti.one_shot = true
+        confetti.explosiveness = 0.9
+        confetti.direction = Vector2(0, -1)
+        confetti.spread = 70.0
+        confetti.initial_velocity_min = 250.0
+        confetti.initial_velocity_max = 520.0
+        confetti.gravity = Vector2(0, 620)
+        confetti.scale_amount_min = 2.5
+        confetti.scale_amount_max = 5.0
+        confetti.color = UiStyle.GOLD
+        confetti.position = player_nodes[ranking[0]].position + PLAYER_SIZE / 2.0
+        confetti.emitting = true
+        add_child(confetti)
+    await get_tree().create_timer(1.6).timeout
     MinigameManager.report_finished(ranking)

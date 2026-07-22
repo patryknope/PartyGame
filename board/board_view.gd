@@ -6,8 +6,8 @@ extends Control
 const TILE_DIAMETER := 62.0
 const START_DIAMETER := 78.0
 const PAWN_DIAMETER := 28.0
-const RING_CENTER := Vector2(640, 350)
-const RING_RADIUS := Vector2(470, 235)
+const RING_CENTER := Vector2(640, 342)
+const RING_RADIUS := Vector2(470, 222)
 const TYPE_COLORS := {
     "start": Color(0.95, 0.78, 0.3),
     "blue": Color(0.27, 0.52, 0.9),
@@ -26,6 +26,7 @@ var _anim_queue: Array = []
 var _animating := false
 var _active_pawn_tween: Tween
 var _active_player := -1
+var _felt: Panel
 
 
 func _ready() -> void:
@@ -33,16 +34,27 @@ func _ready() -> void:
     TurnManager.turn_started.connect(_on_turn_started)
     _build_table()
     _build_tiles()
+    _felt.draw.connect(_draw_connections)
+    _felt.queue_redraw()
 
 
 func _build_table() -> void:
-    var felt := Panel.new()
-    felt.add_theme_stylebox_override(
+    _felt = Panel.new()
+    _felt.add_theme_stylebox_override(
         "panel", UiStyle.flat(UiStyle.FELT_LIGHT, 60, 8, Color(0.3, 0.2, 0.1), 14)
     )
-    felt.position = Vector2(90, 70)
-    felt.size = Vector2(1100, 560)
-    add_child(felt)
+    _felt.position = Vector2(90, 70)
+    _felt.size = Vector2(1100, 560)
+    add_child(_felt)
+
+    var watermark := Label.new()
+    watermark.text = "CASINO"
+    watermark.set_anchors_preset(Control.PRESET_FULL_RECT)
+    watermark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    watermark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+    watermark.add_theme_font_size_override("font_size", 110)
+    watermark.add_theme_color_override("font_color", Color(1, 1, 1, 0.05))
+    _felt.add_child(watermark)
 
 
 func _build_tiles() -> void:
@@ -72,12 +84,12 @@ func _build_tiles() -> void:
         node.add_child(icon)
 
 
-func _draw() -> void:
+func _draw_connections() -> void:
     for tile_id in BoardManager.tiles:
         for next_id in BoardManager.tiles[tile_id]["next"]:
-            draw_line(
-                tile_positions[tile_id],
-                tile_positions[int(next_id)],
+            _felt.draw_line(
+                tile_positions[tile_id] - _felt.position,
+                tile_positions[int(next_id)] - _felt.position,
                 Color(1, 1, 1, 0.22),
                 7.0,
                 true

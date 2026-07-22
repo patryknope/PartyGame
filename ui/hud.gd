@@ -127,7 +127,7 @@ func setup_players() -> void:
         card.add_child(name_label)
 
         var coins_label := Label.new()
-        coins_label.text = "0"
+        coins_label.text = str(EconomyManager.get_coins(player["id"]))
         coins_label.position = Vector2(48, 30)
         coins_label.add_theme_font_size_override("font_size", 17)
         coins_label.add_theme_color_override("font_color", UiStyle.GOLD)

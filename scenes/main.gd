@@ -45,6 +45,8 @@ func _ready() -> void:
 
     if "autotest" in OS.get_cmdline_user_args():
         _setup_autotest()
+    elif "screenshots" in OS.get_cmdline_user_args():
+        _screenshot_run()
 
 
 func _on_state_changed(new_state: int) -> void:
@@ -172,6 +174,33 @@ func _panel_button(box: VBoxContainer, text: String, action: Callable) -> void:
     button.custom_minimum_size = Vector2(0, 48)
     button.pressed.connect(action)
     box.add_child(button)
+
+
+# ── Dev screenshots: godot -- screenshots ──
+
+func _screenshot_run() -> void:
+    await get_tree().create_timer(0.6).timeout
+    await _capture("menu")
+    GameManager.start_match(4, 15)
+    await get_tree().create_timer(1.0).timeout
+    await _capture("board")
+    GameManager.roll_dice()
+    await get_tree().create_timer(1.2).timeout
+    await _capture("board_move")
+    MinigameManager.select_minigame(4)
+    _start_minigame()
+    await get_tree().create_timer(1.2).timeout
+    await _capture("minigame")
+    get_tree().quit(0)
+
+
+func _capture(shot_name: String) -> void:
+    await RenderingServer.frame_post_draw
+    var image := get_viewport().get_texture().get_image()
+    var dir := ProjectSettings.globalize_path("res://dev_screenshots")
+    DirAccess.make_dir_recursive_absolute(dir)
+    image.save_png(dir + "/" + shot_name + ".png")
+    print("[SHOT] " + shot_name)
 
 
 # ── Autotest (headless verification): godot --headless -- autotest ──
