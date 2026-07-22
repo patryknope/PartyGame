@@ -211,6 +211,13 @@ func _panel_button(box: VBoxContainer, text: String, action: Callable) -> void:
 func _screenshot_run() -> void:
     await get_tree().create_timer(0.6).timeout
     await _capture("menu")
+
+    NetworkManager.host_game()
+    await get_tree().create_timer(1.0).timeout
+    await _capture("lobby")
+    NetworkManager.leave_game()
+    await get_tree().create_timer(0.2).timeout
+
     GameManager.start_match(4, 15)
     await get_tree().create_timer(1.0).timeout
     await _capture("board")
