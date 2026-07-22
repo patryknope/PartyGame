@@ -2,21 +2,30 @@
 
 ## Current Stage
 
-Game Design Document Creation + Production Planning
+Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's playtest.
+
+---
+
+## How To Run The Prototype
+
+- Repo root is the Godot 4 project — open it in Godot 4.6+ and press F5, or use `run_game.bat`
+- Hotseat 2-4 players; minigame controls: P1 WASD, P2 arrows, P3 TFGH, P4 IJKL
+- Technical check without playing: `godot --headless -- autotest` (plays 2 full matches)
 
 ---
 
 ## Current Focus
 
-- Minigames
+- Michał plays the prototype and evaluates: is the core loop fun?
+- Feedback → iteration on board balance and minigame pacing
+- Minigames (design of the next ones)
 - Detailed Casino Systems
-- Prepare Claude Review Package
-- Production Roadmap (Faza 2 ustalona)
 
 ---
 
 ## Active Topics
 
+- Etap 1 playtest & feedback
 - Minigames
 - Detailed Casino Systems
 
@@ -24,24 +33,21 @@ Game Design Document Creation + Production Planning
 
 ## Next Planned Topics
 
-1. Minigames
-2. Detailed Casino Systems
-3. Claude Review Package
+1. Etap 1 playtest results
+2. Balance iteration (board values, minigame rewards)
+3. Second minigame
+4. Detailed Casino Systems
 
 ---
 
 ## Development Priority
 
-1. Finish GDD
-2. Claude Review
-3. GDD Revisions
-4. Production Roadmap
-5. Technical Foundation (Faza 2)
-6. Lokalny Prototyp (Etap 1)
-7. Multiplayer Prototype (Etap 2)
-8. Vertical Slice
-9. Testing
-10. Early Access
+1. Etap 1 playtest (is it fun?)
+2. Iteration on Etap 1
+3. Multiplayer Prototype (Etap 2)
+4. Vertical Slice
+5. Testing
+6. Early Access
 
 ---
 
@@ -55,16 +61,18 @@ Game Design Document Creation + Production Planning
 - Upgrade Costs
 - Item prices per rarity tier
 - Shop appearance rates per rarity tier
-- Default Starting Coins value
+- Default Starting Coins value (prototype placeholder: 20)
 - Full list of Economy lobby options
-- Dokładna lista managerów
-- Szczegółowy zakres podstawowej planszy w Etapie 1
-- Konfiguracja Claude Code
 
 ---
 
 ## Recent Major Decisions
 
+- Etap 1 prototype implemented by Claude Code (2026-07-22) — details in CHANGELOG.
+- Manager list for Etap 1: GameManager, PlayerManager, TurnManager, EconomyManager, BoardManager, MinigameManager.
+- Basic board scope: 20-tile loop + 4-tile risky shortcut, data-driven (data/casino_board.json).
+- First minigame: Kolorowy Chaos (FFA elimination, 2-4 hotseat).
+- Claude Code workflow: direct repo file edits, validated via headless autotest.
 - Lobby & Match Rules established.
 - Visual Style accepted: 3D Low Poly Cartoon.
 - Character System accepted: Cartoon Mascots (modular parts).

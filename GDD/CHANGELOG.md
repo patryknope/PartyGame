@@ -316,3 +316,37 @@ Design Notes:
 - Claude Code bezpośrednio pisze i modyfikuje pliki projektu Godot
 - Michał testuje i daje feedback
 - Konfiguracja Claude Code do ustalenia przed Etapem 1
+
+---
+
+## 2026-07-22
+
+### IMPLEMENTED
+
+Etap 1 — Local Prototype (first playable build).
+
+Scope delivered:
+- Godot 4 project structure per GDD_ARCHITECTURE (autoload/, core/, board/, minigames/, ui/, data/, scenes/)
+- Managers: GameManager, PlayerManager, TurnManager, EconomyManager, BoardManager, MinigameManager
+- Minimal state machine: MainMenu, PlayerTurn, PlayerMove, Minigame, MatchEnd
+- Turns for 2-4 hotseat players, Basic Dice (1-8)
+- Casino prototype board: 20-tile loop + 4-tile risky shortcut, data-driven (data/casino_board.json)
+- Route choice at the fork, +20 coins for passing START
+- Economy: coins via EconomyManager only, clamped at 0
+- First minigame: Kolorowy Chaos (FFA, elimination rounds, keyboard hotseat)
+- Full loop: board -> minigame -> results -> board; new match without restarting the game
+- Headless autotest (godot --headless -- autotest) plays two full matches
+
+Design Notes:
+- All coding rules applied from the first line (managers own data, UI has no logic)
+- Placeholder balance values marked in code (starting coins 20, blue +10, red -5, minigame rewards 15/10/5/2)
+
+Playtest Required:
+- Is the core loop fun (Etap 1 exit condition)
+- Shortcut risk/reward balance
+- Minigame timer pacing
+
+Open Questions Resolved:
+- Manager list for Etap 1: GameManager, PlayerManager, TurnManager, EconomyManager, BoardManager, MinigameManager
+- Basic board scope: 20-tile loop + 1 shortcut (4 tiles)
+- Claude Code configuration: works directly on repo files, validates via headless autotest
