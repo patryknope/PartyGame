@@ -247,6 +247,7 @@ func _setup_net_autotest(as_host: bool) -> void:
     get_tree().create_timer(120.0).timeout.connect(_net_autotest_watchdog)
     if as_host:
         NetworkManager.host_game()
+        NetworkManager.join_code = "0000"
         NetworkManager.network_players_changed.connect(_net_autotest_on_players)
         GameManager.state_changed.connect(_net_autotest_on_state)
         GameManager.minigame_rewards_granted.connect(
@@ -254,6 +255,8 @@ func _setup_net_autotest(as_host: bool) -> void:
         )
     else:
         NetworkManager.connection_failed.connect(func(): get_tree().quit(1))
+        NetworkManager.code_rejected.connect(func(): get_tree().quit(1))
+        NetworkManager.join_code = "0000"
         NetworkManager.join_game("127.0.0.1")
 
 

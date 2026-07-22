@@ -13,6 +13,7 @@ signal connection_failed
 signal disconnected_from_host
 signal network_players_changed(count: int)
 signal upnp_completed(success: bool, external_ip: String)
+signal code_rejected
 signal minigame_start_requested
 signal minigame_positions(positions: Dictionary)
 signal minigame_event(kind: String, data: Dictionary)
@@ -24,10 +25,13 @@ const CONNECT_TIMEOUT := 12.0
 var is_online := false
 var my_player_id := 0
 var peer_to_player := {}
+var join_code := ""
 
 var _join_order: Array = []
+var _pending_peers := {}
 var _connected := false
 var _upnp_thread: Thread
+var _upnp: UPNP
 
 
 func get_lan_addresses() -> Array:
@@ -55,6 +59,7 @@ func _exit_tree() -> void:
     if _upnp_thread != null and _upnp_thread.is_started():
         _upnp_thread.wait_to_finish()
         _upnp_thread = null
+    _close_upnp()
 
 
 func is_server() -> bool:
@@ -90,6 +95,8 @@ func host_game() -> void:
     is_online = true
     my_player_id = 0
     _join_order.clear()
+    _pending_peers.clear()
+    join_code = "%04d" % (randi() % 10000)
     hosted.emit()
     network_players_changed.emit(player_count())
     _start_upnp()
@@ -128,14 +135,23 @@ func _upnp_worker() -> void:
             var mapped := upnp.add_port_mapping(PORT, PORT, "PartyGame", "UDP")
             success = mapped == UPNP.UPNP_RESULT_SUCCESS
             external_ip = upnp.query_external_address()
-    call_deferred("_upnp_done", success, external_ip)
+    call_deferred("_upnp_done", success, external_ip, upnp if success else null)
 
 
-func _upnp_done(success: bool, external_ip: String) -> void:
+func _upnp_done(success: bool, external_ip: String, upnp: UPNP) -> void:
     if _upnp_thread != null:
         _upnp_thread.wait_to_finish()
         _upnp_thread = null
+    _upnp = upnp
     upnp_completed.emit(success, external_ip)
+
+
+func _close_upnp() -> void:
+    # The port stays open only while hosting — close it as soon as we
+    # leave, so port scanners find nothing afterwards.
+    if _upnp != null:
+        _upnp.delete_port_mapping(PORT, "UDP")
+        _upnp = null
 
 
 func leave_game() -> void:
@@ -146,21 +162,56 @@ func leave_game() -> void:
     my_player_id = 0
     peer_to_player.clear()
     _join_order.clear()
+    _pending_peers.clear()
+    _close_upnp()
 
 
 func _on_peer_connected(peer_id: int) -> void:
     if not multiplayer.is_server():
         return
-    if _join_order.size() >= MAX_CLIENTS:
+    # Unknown until it sends the right join code; kicked after 6 s.
+    _pending_peers[peer_id] = true
+    get_tree().create_timer(6.0).timeout.connect(_kick_if_pending.bind(peer_id))
+
+
+func _kick_if_pending(peer_id: int) -> void:
+    if _pending_peers.has(peer_id) and multiplayer.multiplayer_peer != null:
+        _pending_peers.erase(peer_id)
+        multiplayer.multiplayer_peer.disconnect_peer(peer_id)
+
+
+@rpc("any_peer", "call_remote", "reliable")
+func _submit_code(code: String) -> void:
+    if not multiplayer.is_server():
+        return
+    var peer_id := multiplayer.get_remote_sender_id()
+    if not _pending_peers.has(peer_id):
+        return
+    _pending_peers.erase(peer_id)
+    if code != join_code or _join_order.size() >= MAX_CLIENTS:
+        _code_rejected.rpc_id(peer_id)
         multiplayer.multiplayer_peer.disconnect_peer(peer_id)
         return
     _join_order.append(peer_id)
+    _code_accepted.rpc_id(peer_id)
     network_players_changed.emit(player_count())
+
+
+@rpc("authority", "call_remote", "reliable")
+func _code_accepted() -> void:
+    joined.emit()
+
+
+@rpc("authority", "call_remote", "reliable")
+func _code_rejected() -> void:
+    leave_game()
+    code_rejected.emit()
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
     if not multiplayer.is_server():
         return
+    _pending_peers.erase(peer_id)
     _join_order.erase(peer_id)
     network_players_changed.emit(player_count())
     # v1: no grace period yet — mid-match disconnect aborts the session
@@ -171,7 +222,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 
 func _on_connected_to_server() -> void:
     _connected = true
-    joined.emit()
+    _submit_code.rpc_id(1, join_code)
 
 
 func _on_connection_failed() -> void:

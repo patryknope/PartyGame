@@ -7,6 +7,7 @@ const ROUND_OPTIONS: Array[int] = [10, 15, 20, 30]
 var players_option: OptionButton
 var rounds_option: OptionButton
 var ip_edit: LineEdit
+var code_edit: LineEdit
 var net_status: Label
 var lobby_panel: PanelContainer
 var lobby_label: Label
@@ -106,6 +107,11 @@ func _ready() -> void:
     ip_edit.text = "127.0.0.1"
     net_box.add_child(ip_edit)
 
+    code_edit = LineEdit.new()
+    code_edit.placeholder_text = "Kod dolaczenia (od hosta)"
+    code_edit.max_length = 4
+    net_box.add_child(code_edit)
+
     var join_button := Button.new()
     join_button.text = "Dolacz do gry"
     join_button.pressed.connect(_on_join_pressed)
@@ -161,6 +167,7 @@ func _ready() -> void:
     NetworkManager.disconnected_from_host.connect(_on_net_disconnected)
     NetworkManager.network_players_changed.connect(_on_net_players_changed)
     NetworkManager.upnp_completed.connect(_on_upnp_completed)
+    NetworkManager.code_rejected.connect(_on_code_rejected)
 
     var controls := Label.new()
     controls.text = "Sterowanie w minigrze:  G1 WASD    G2 strzalki    G3 TFGH    G4 IJKL  |  online: WASD lub strzalki"
@@ -186,7 +193,13 @@ func _on_host_pressed() -> void:
 
 func _on_join_pressed() -> void:
     net_status.text = "Lacze z %s... (do %d s)" % [ip_edit.text.strip_edges(), int(NetworkManager.CONNECT_TIMEOUT)]
+    NetworkManager.join_code = code_edit.text.strip_edges()
     NetworkManager.join_game(ip_edit.text)
+
+
+func _on_code_rejected() -> void:
+    net_status.text = "Bledny kod dolaczenia (albo lobby pelne)."
+    lobby_panel.visible = false
 
 
 func _on_net_hosted() -> void:
@@ -240,7 +253,9 @@ func _on_net_players_changed(count: int) -> void:
 
 func _refresh_lobby() -> void:
     if NetworkManager.is_online and NetworkManager.is_server():
-        lobby_label.text = "Graczy w lobby: %d / 4" % NetworkManager.player_count()
+        lobby_label.text = "Graczy w lobby: %d / 4\nKod dolaczenia: %s" % [
+            NetworkManager.player_count(), NetworkManager.join_code,
+        ]
 
 
 func _on_lobby_start_pressed() -> void:
