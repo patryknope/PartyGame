@@ -2,7 +2,9 @@
 
 ## Current Stage
 
-Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's playtest.
+Etap 2 — Multiplayer: host-authoritative networking DELIVERED over LAN (ENet);
+Steam transport swap prepared (see STEAM.md). Etap 1 scope still awaits
+Michał's fun-playtest.
 
 ---
 
@@ -69,6 +71,10 @@ Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's p
 
 ## Recent Major Decisions
 
+- Multiplayer implemented host-authoritatively on Godot High-Level Multiplayer
+  API: ENet/LAN today, GodotSteam SteamMultiplayerPeer as a drop-in transport
+  swap (2 functions, see STEAM.md). Verified by a two-instance network
+  autotest with identical final state (2026-07-22).
 - Prototype now plays to the canon win condition: Main Trophy purchasable on the
   board (50 coins placeholder, respawns after purchase), most Trophies wins,
   coins break ties. Dice selection added (Basic/Safe/Risk). Minigame pool grew
