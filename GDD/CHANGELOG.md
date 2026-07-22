@@ -367,3 +367,51 @@ Scope:
 Design Notes:
 - Matches the Cartoon Mascots character direction (2D stand-in until the 3D Low Poly pipeline starts)
 - All art is engine-drawn vectors — zero external sprites; Fredoka font remains the only binary asset
+
+---
+
+## 2026-07-22 (design session — Roulette & Casino board)
+
+### ACCEPTED
+
+The whole Casino board sits on one giant Roulette.
+
+Design Notes:
+- Every board tile sits on a colored Roulette segment
+- Player position on the board equals the player's current color
+
+---
+
+### ACCEPTED
+
+Roulette has 3 colors: red, black, green.
+
+---
+
+### ACCEPTED
+
+The Dealer spins the Roulette at the START of each round.
+
+Design Notes:
+- End of round is reserved for the minigame draw
+
+---
+
+### ACCEPTED
+
+Team minigame assignment is a weighted draw tilted by the player's current color.
+
+Design Notes:
+- Standing on red → higher chance of the red team, never guaranteed
+- Purpose: vary team layouts between rounds (2v2v2, 3v3, 2v4, even 1v5)
+- Without randomness, 3 colors would settle into repetitive 3v3 / 2v2v2
+
+Important Exclusions:
+- Colors → teams is Casino-specific (GDD_CASINO); GDD_MINIGAMES stays board-neutral
+
+Open Questions:
+- Color → team structure mapping per minigame
+- Exact draw weights
+- Asymmetric layouts (2v4, 1v5) vs TEAM_EVEN / ONE_VS_ALL categories — noted inconsistency
+- Does the spin rotate colors under players, or does color derive purely from position?
+- Colors in FFA minigames

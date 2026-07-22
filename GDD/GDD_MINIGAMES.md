@@ -157,3 +157,6 @@ Pozostali próbują go wyeliminować.
 - Nagrody za wyniki w minigirach
 - System punktacji w minigirach drużynowych
 - Częstotliwość pojawiania się konkretnych minigier
+- Czy kategorie drużynowe wspierają asymetryczne składy narzucane przez mechanikę
+  planszy (np. 2v4, 1v5) — TEAM_EVEN zakłada równe drużyny, ONE_VS_ALL dokładnie
+  1 vs reszta; niespójność zgłoszona przez GDD_CASINO (kolory Ruletki → drużyny)

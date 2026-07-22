@@ -26,6 +26,7 @@ Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's p
 ## Active Topics
 
 - Etap 1 playtest & feedback
+- Roulette board mechanic (Casino) — colors → teams, open questions in GDD_CASINO
 - Minigames
 - Detailed Casino Systems
 
@@ -68,6 +69,9 @@ Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's p
 
 ## Recent Major Decisions
 
+- Roulette is the board foundation: the whole Casino board sits on one giant
+  Roulette (3 colors: red/black/green); position = current color; Dealer spins
+  at round start; team minigames use a color-weighted soft draw (2026-07-22).
 - Etap 1 prototype implemented by Claude Code (2026-07-22) — details in CHANGELOG.
 - Manager list for Etap 1: GameManager, PlayerManager, TurnManager, EconomyManager, BoardManager, MinigameManager.
 - Basic board scope: 20-tile loop + 4-tile risky shortcut, data-driven (data/casino_board.json).
