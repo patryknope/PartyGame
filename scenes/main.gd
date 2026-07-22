@@ -12,9 +12,10 @@ var current_minigame: Control
 
 func _ready() -> void:
     randomize()
+    theme = UiStyle.build_theme()
 
     var background := ColorRect.new()
-    background.color = Color(0.07, 0.16, 0.11)
+    background.color = UiStyle.FELT
     background.set_anchors_preset(Control.PRESET_FULL_RECT)
     add_child(background)
 
@@ -128,18 +129,23 @@ func _clear_overlay() -> void:
 
 
 func _make_panel() -> VBoxContainer:
+    var dim := ColorRect.new()
+    dim.color = Color(0, 0, 0, 0.55)
+    dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+    dim.mouse_filter = Control.MOUSE_FILTER_STOP
+    overlay.add_child(dim)
+
+    var center := CenterContainer.new()
+    center.set_anchors_preset(Control.PRESET_FULL_RECT)
+    overlay.add_child(center)
+
     var panel := PanelContainer.new()
-    panel.set_anchors_preset(Control.PRESET_CENTER)
-    panel.custom_minimum_size = Vector2(520, 0)
-    panel.position = Vector2(380, 160)
+    panel.custom_minimum_size = Vector2(540, 0)
+    center.add_child(panel)
+
     var box := VBoxContainer.new()
     box.add_theme_constant_override("separation", 18)
-    var margin := MarginContainer.new()
-    for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
-        margin.add_theme_constant_override(side, 28)
-    margin.add_child(box)
-    panel.add_child(margin)
-    overlay.add_child(panel)
+    panel.add_child(box)
     return box
 
 
@@ -147,7 +153,7 @@ func _panel_title(box: VBoxContainer, text: String) -> void:
     var label := Label.new()
     label.text = text
     label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    label.add_theme_font_size_override("font_size", 32)
+    UiStyle.title_look(label, 34, UiStyle.GOLD)
     box.add_child(label)
 
 
@@ -155,7 +161,8 @@ func _panel_text(box: VBoxContainer, text: String) -> void:
     var label := Label.new()
     label.text = text
     label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    label.add_theme_font_size_override("font_size", 20)
+    label.add_theme_font_size_override("font_size", 21)
+    label.add_theme_color_override("font_color", UiStyle.CREAM)
     box.add_child(label)
 
 
