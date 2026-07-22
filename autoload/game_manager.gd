@@ -61,7 +61,7 @@ func _begin_roll(player_id: int, steps: int) -> void:
     last_roll = steps
     dice_rolled.emit(player_id, steps)
     _set_state(State.PLAYER_MOVE)
-    BoardManager.begin_move(player_id, steps)
+    BoardManager.begin_move(player_id, steps, ItemManager.consume_reverse(player_id))
 
 
 func _roll_jackpot(player_id: int, dice: Dictionary) -> void:
@@ -154,7 +154,7 @@ func move_forced(steps: int) -> void:
     last_roll = steps
     dice_rolled.emit(player_id, steps)
     _set_state(State.PLAYER_MOVE)
-    BoardManager.begin_move(player_id, steps)
+    BoardManager.begin_move(player_id, steps, ItemManager.consume_reverse(player_id))
 
 
 func roll_pair() -> Array:

@@ -307,6 +307,7 @@ func _connect_relays() -> void:
     BoardManager.move_finished.connect(func(a): _relay("move_finished", [a]))
     BoardManager.tile_resolved.connect(func(a, b, c, d): _relay("tile_resolved", [a, b, c, d]))
     BoardManager.start_passed.connect(func(a, b): _relay("start_passed", [a, b]))
+    BoardManager.bonus_item_granted.connect(func(a, b): _relay("bonus_item_granted", [a, b]))
     EconomyManager.coins_changed.connect(func(a, b): _relay("coins_changed", [a, b]))
     TrophyManager.trophy_moved.connect(func(a): _relay("trophy_moved", [a]))
     TrophyManager.trophy_offer.connect(func(a, b): _relay("trophy_offer", [a, b]))
@@ -401,6 +402,8 @@ func _reemit(event: String, args: Array) -> void:
             BoardManager.tile_resolved.emit(args[0], args[1], args[2], args[3])
         "start_passed":
             BoardManager.start_passed.emit(args[0], args[1])
+        "bonus_item_granted":
+            BoardManager.bonus_item_granted.emit(args[0], args[1])
         "coins_changed":
             EconomyManager.coins_changed.emit(args[0], args[1])
         "trophy_moved":

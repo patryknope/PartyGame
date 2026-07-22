@@ -3,10 +3,10 @@ extends Control
 # Pure presentation of the board: landscape, road, tiles, bear pawns
 # and movement animation. Reads state from BoardManager, never modifies it.
 
-const TILE_DIAMETER := 48.0
-const START_DIAMETER := 64.0
-const RING_CENTER := Vector2(640, 342)
-const RING_RADIUS := Vector2(470, 222)
+const TILE_DIAMETER := 56.0
+const START_DIAMETER := 74.0
+const RING_CENTER := Vector2(610, 350)
+const RING_RADIUS := Vector2(510, 250)
 const ROAD_FILL := Color(0.88, 0.78, 0.6)
 const ROAD_BORDER := Color(0.56, 0.43, 0.29)
 const TYPE_COLORS := {
@@ -16,9 +16,11 @@ const TYPE_COLORS := {
     "neutral": Color(0.55, 0.56, 0.62),
     "shop": Color(0.62, 0.4, 0.85),
     "cards": Color(0.15, 0.5, 0.44),
+    "bonus": Color(0.93, 0.55, 0.2),
 }
 const TYPE_ICONS := {
     "start": "GO", "blue": "+10", "red": "-5", "neutral": "", "shop": "SKLEP", "cards": "KARTY",
+    "bonus": "?",
 }
 const PAWN_OFFSETS: Array[Vector2] = [
     Vector2(-24, 4), Vector2(24, 4), Vector2(-9, 18), Vector2(9, 18),
@@ -81,11 +83,187 @@ class BuildingMarker extends Node2D:
             draw_circle(Vector2(-6.0 + i * 6.0, 6.5), 2.2, Color(0.95, 0.78, 0.3))
 
 
+class RingPulse extends Node2D:
+    var ring_color := Color.WHITE
+    var max_radius := 26.0
+    var _t := 0.0:
+        set(value):
+            _t = value
+            queue_redraw()
+
+    func _ready() -> void:
+        var tween := create_tween()
+        tween.tween_property(self, "_t", 1.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        var c := ring_color
+        c.a = 1.0 - _t
+        draw_arc(Vector2.ZERO, 8.0 + max_radius * _t, 0, TAU, 32, c, 3.0, true)
+
+
+class ParticleBurst extends Node2D:
+    var burst_color := Color.WHITE
+    var count := 8
+    var max_radius := 24.0
+    var _t := 0.0:
+        set(value):
+            _t = value
+            queue_redraw()
+
+    func _ready() -> void:
+        var tween := create_tween()
+        tween.tween_property(self, "_t", 1.0, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        var c := burst_color
+        c.a = 1.0 - _t
+        for i in count:
+            var angle := TAU * i / count
+            draw_circle(Vector2(cos(angle), sin(angle)) * max_radius * _t, 3.0, c)
+
+
+class DiceGlyph extends Node2D:
+    var glyph_color := Color.WHITE
+    var _ink := Color(0.15, 0.13, 0.15)
+
+    func _ready() -> void:
+        scale = Vector2(0.2, 0.2)
+        rotation = -0.35
+        modulate.a = 1.0
+        var tween := create_tween()
+        tween.tween_property(self, "scale", Vector2.ONE, 0.16)\
+            .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+        tween.parallel().tween_property(self, "rotation", 0.0, 0.16)
+        tween.tween_interval(0.45)
+        tween.tween_property(self, "position:y", position.y - 22.0, 0.3)
+        tween.parallel().tween_property(self, "modulate:a", 0.0, 0.3)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        draw_rect(Rect2(-10, -10, 20, 20), glyph_color)
+        draw_rect(Rect2(-10, -10, 20, 20), glyph_color.darkened(0.35), false, 2.0)
+        for p in [Vector2(-4, -4), Vector2(4, -4), Vector2(-4, 4), Vector2(4, 4), Vector2.ZERO]:
+            draw_circle(p, 1.7, _ink)
+
+
+class Poof extends Node2D:
+    var _t := 0.0:
+        set(value):
+            _t = value
+            queue_redraw()
+
+    func _ready() -> void:
+        var tween := create_tween()
+        tween.tween_property(self, "_t", 1.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        var brown := Color(0.45, 0.32, 0.2, 1.0 - _t)
+        for i in 5:
+            var angle := TAU * i / 5.0 + 0.3
+            var r := 6.0 + _t * 15.0
+            draw_circle(Vector2(cos(angle), sin(angle)) * r, 5.0 - _t * 2.5, brown)
+
+
+class SwapSwirl extends Node2D:
+    var pos_a := Vector2.ZERO
+    var pos_b := Vector2.ZERO
+    var _t := 0.0:
+        set(value):
+            _t = value
+            queue_redraw()
+
+    func _ready() -> void:
+        var tween := create_tween()
+        tween.tween_property(self, "_t", 1.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        var teal := Color(0.15, 0.6, 0.55, 1.0 - _t)
+        _draw_dashed_arc(pos_a, pos_b, pos_a.lerp(pos_b, 0.5) - Vector2(0, 40), teal)
+        _draw_dashed_arc(pos_b, pos_a, pos_a.lerp(pos_b, 0.5) + Vector2(0, 24), teal)
+
+    func _draw_dashed_arc(from: Vector2, to: Vector2, mid: Vector2, color: Color) -> void:
+        var prev := from
+        var segments := 16
+        for i in range(1, segments + 1):
+            var t := float(i) / segments
+            var mt := 1.0 - t
+            var p: Vector2 = from * (mt * mt) + mid * (2.0 * mt * t) + to * (t * t)
+            if i % 2 == 0:
+                draw_line(prev, p, color, 3.0, true)
+            prev = p
+
+
+class Projectile extends Node2D:
+    signal arrived(pos: Vector2)
+
+    var from_pos := Vector2.ZERO
+    var to_pos := Vector2.ZERO
+    var proj_color := Color.WHITE
+    var _mid := Vector2.ZERO
+
+    func _ready() -> void:
+        _mid = from_pos.lerp(to_pos, 0.5) - Vector2(0, 50)
+        position = from_pos
+        var tween := create_tween()
+        tween.tween_method(_advance, 0.0, 1.0, 0.4)\
+            .set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+        tween.finished.connect(_on_arrived)
+
+    func _advance(value: float) -> void:
+        var mt := 1.0 - value
+        var new_pos: Vector2 = from_pos * (mt * mt) + _mid * (2.0 * mt * value) + to_pos * (value * value)
+        if new_pos != position:
+            rotation = (new_pos - position).angle()
+        position = new_pos
+
+    func _on_arrived() -> void:
+        arrived.emit(position)
+        queue_free()
+
+    func _draw() -> void:
+        draw_colored_polygon(
+            PackedVector2Array([Vector2(10, 0), Vector2(-8, -5), Vector2(-4, 0), Vector2(-8, 5)]),
+            proj_color
+        )
+
+
+class CoinFly extends Node2D:
+    var from_pos := Vector2.ZERO
+    var to_pos := Vector2.ZERO
+    var delay := 0.0
+    var _mid := Vector2.ZERO
+
+    func _ready() -> void:
+        _mid = from_pos.lerp(to_pos, 0.5) - Vector2(0, 30)
+        position = from_pos
+        modulate.a = 0.0
+        var tween := create_tween()
+        if delay > 0.0:
+            tween.tween_interval(delay)
+        tween.tween_callback(func(): modulate.a = 1.0)
+        tween.tween_method(_advance, 0.0, 1.0, 0.4)\
+            .set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+        tween.finished.connect(queue_free)
+
+    func _advance(value: float) -> void:
+        var mt := 1.0 - value
+        position = from_pos * (mt * mt) + _mid * (2.0 * mt * value) + to_pos * (value * value)
+
+    func _draw() -> void:
+        draw_circle(Vector2.ZERO, 5.0, Color(0.95, 0.78, 0.3))
+        draw_arc(Vector2.ZERO, 5.0, 0, TAU, 12, Color(0.72, 0.55, 0.16), 1.4, true)
+
+
 func _ready() -> void:
     BoardManager.player_stepped.connect(_on_player_stepped)
     BoardManager.player_placed.connect(_on_player_placed)
     BoardManager.tile_resolved.connect(_on_tile_resolved)
     BoardManager.start_passed.connect(_on_start_passed)
+    BoardManager.bonus_item_granted.connect(_on_bonus_item_granted)
     TurnManager.turn_started.connect(_on_turn_started)
     TrophyManager.trophy_moved.connect(_on_trophy_moved)
     TrophyManager.trophy_bought.connect(_on_trophy_bought)
@@ -132,7 +310,7 @@ func _build_tiles() -> void:
         icon.set_anchors_preset(Control.PRESET_FULL_RECT)
         icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         icon.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-        icon.add_theme_font_size_override("font_size", 18 if tile["type"] == "start" else 15)
+        icon.add_theme_font_size_override("font_size", 20 if tile["type"] == "start" else 16)
         icon.add_theme_color_override("font_color", Color(1, 1, 1, 0.95))
         icon.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.4))
         icon.add_theme_constant_override("outline_size", 4)
@@ -323,11 +501,101 @@ func _on_trap_triggered(victim_id: int, _owner_id: int, coins_lost: int) -> void
 
 
 func _on_item_used(player_id: int, item_id: String, target_id: int) -> void:
-    if item_id in ["rocket", "magnet"] and target_id >= 0:
+    _play_item_fx(item_id, player_id, target_id)
+    if item_id in ["rocket", "magnet", "punch"] and target_id >= 0:
         _emote(target_id, "angry")
         _emote(player_id, "happy")
     elif item_id == "shield":
         _emote(player_id, "happy")
+
+
+func _play_item_fx(item_id: String, player_id: int, target_id: int) -> void:
+    if not pawns.has(player_id):
+        return
+    var caster_pos: Vector2 = pawns[player_id].position
+    match item_id:
+        "shield":
+            _spawn_ring(caster_pos, Color(0.55, 0.8, 1.0))
+        "extra_roll":
+            _spawn_dice(caster_pos, Color(0.95, 0.94, 0.86))
+        "loaded_dice":
+            _spawn_dice(caster_pos, UiStyle.GOLD)
+        "copy_cat":
+            _spawn_dice(caster_pos, Color(0.55, 0.8, 1.0))
+        "reverse":
+            _spawn_ring(caster_pos, Color(0.65, 0.5, 0.9))
+        "trap":
+            _spawn_poof(caster_pos)
+        "swap":
+            if pawns.has(target_id):
+                _spawn_swap(caster_pos, pawns[target_id].position)
+        "rocket":
+            if pawns.has(target_id):
+                _spawn_projectile(caster_pos, pawns[target_id].position, Color(0.9, 0.35, 0.25))
+        "punch":
+            if pawns.has(target_id):
+                _spawn_projectile(caster_pos, pawns[target_id].position, Color(0.85, 0.5, 0.2))
+        "magnet":
+            if pawns.has(target_id):
+                _spawn_magnet(pawns[target_id].position, caster_pos)
+
+
+func _spawn_ring(pos: Vector2, color: Color) -> void:
+    var ring := RingPulse.new()
+    ring.ring_color = color
+    ring.position = pos + Vector2(0, -35)
+    add_child(ring)
+
+
+func _spawn_dice(pos: Vector2, color: Color) -> void:
+    var glyph := DiceGlyph.new()
+    glyph.glyph_color = color
+    glyph.position = pos + Vector2(20, -70)
+    add_child(glyph)
+
+
+func _spawn_poof(pos: Vector2) -> void:
+    var poof := Poof.new()
+    poof.position = pos + Vector2(0, -6)
+    add_child(poof)
+
+
+func _spawn_swap(pos_a: Vector2, pos_b: Vector2) -> void:
+    var swirl := SwapSwirl.new()
+    swirl.pos_a = pos_a + Vector2(0, -30)
+    swirl.pos_b = pos_b + Vector2(0, -30)
+    add_child(swirl)
+
+
+func _spawn_projectile(from: Vector2, to: Vector2, color: Color) -> void:
+    var proj := Projectile.new()
+    proj.from_pos = from + Vector2(0, -40)
+    proj.to_pos = to + Vector2(0, -40)
+    proj.proj_color = color
+    proj.arrived.connect(func(pos): _spawn_burst(pos, color))
+    add_child(proj)
+
+
+func _spawn_burst(pos: Vector2, color: Color) -> void:
+    var burst := ParticleBurst.new()
+    burst.burst_color = color
+    burst.position = pos
+    add_child(burst)
+
+
+func _spawn_magnet(from: Vector2, to: Vector2) -> void:
+    for i in 4:
+        var coin := CoinFly.new()
+        coin.from_pos = from + Vector2(randf_range(-8, 8), -40 + randf_range(-6, 6))
+        coin.to_pos = to + Vector2(0, -60)
+        coin.delay = i * 0.07
+        add_child(coin)
+
+
+func _on_bonus_item_granted(player_id: int, item_id: String) -> void:
+    var item := ItemManager.get_definition(item_id)
+    _popup(player_id, "+%s!" % item["name"], UiStyle.GOLD)
+    _emote(player_id, "star")
 
 
 func _on_item_blocked(target_id: int) -> void:

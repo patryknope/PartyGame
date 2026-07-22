@@ -23,6 +23,7 @@ const ROWS := 6
 const PLAYER_SIZE := Vector2(30, 30)
 const SPEED := 320.0
 const MAX_ROUNDS := 8
+const MIN_LIVING_TILES := 8
 const SPAWN_OFFSETS: Array[Vector2] = [
     Vector2(-220, -80), Vector2(220, -80), Vector2(-220, 80), Vector2(220, 80),
 ]
@@ -136,9 +137,46 @@ func _paint_cell(index: int, dimmed: bool) -> void:
     )
 
 
+func _drop_random_tiles(count: int) -> void:
+    var living: Array = []
+    for i in cells.size():
+        if cell_colors[i] != -1:
+            living.append(i)
+    living.shuffle()
+    var to_drop := mini(count, maxi(living.size() - MIN_LIVING_TILES, 0))
+    for i in to_drop:
+        _drop_tile(living[i])
+
+
+func _drop_tile(index: int) -> void:
+    cell_colors[index] = -1
+    var cell: Panel = cells[index]
+    cell.pivot_offset = cell.size / 2.0
+    var fall := create_tween()
+    fall.set_parallel()
+    fall.tween_property(cell, "scale", Vector2(0.1, 0.1), 0.35)\
+        .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+    fall.tween_property(cell, "rotation", randf_range(-1.3, 1.3), 0.35)
+    fall.tween_property(cell, "modulate:a", 0.0, 0.35)
+
+
+func _apply_round_colors(colors: Array) -> void:
+    for i in cells.size():
+        if colors[i] == -1:
+            if cell_colors[i] != -1:
+                _drop_tile(i)
+        else:
+            cell_colors[i] = colors[i]
+            _paint_cell(i, false)
+
+
 func _start_round() -> void:
     round_num += 1
+    if round_num > 1:
+        _drop_random_tiles(2 + round_num)
     for i in cells.size():
+        if cell_colors[i] == -1:
+            continue
         cell_colors[i] = randi() % CHAOS_COLORS.size()
         _paint_cell(i, false)
     target = randi() % CHAOS_COLORS.size()
@@ -224,9 +262,7 @@ func _on_net_event(kind: String, data: Dictionary) -> void:
     match kind:
         "round":
             round_num = data["num"]
-            for i in cells.size():
-                cell_colors[i] = data["colors"][i]
-                _paint_cell(i, false)
+            _apply_round_colors(data["colors"])
             target = data["target"]
             round_label.text = "Runda %d" % round_num
             banner_label.text = "Stan na: %s" % COLOR_NAMES[target]
@@ -247,7 +283,7 @@ func _on_net_event(kind: String, data: Dictionary) -> void:
                 fall.tween_property(pawn, "rotation", PI / 2.0, 0.5)
                 fall.tween_property(pawn, "scale", Vector2(0.6, 0.6), 0.5)
             for i in cells.size():
-                if cell_colors[i] != target:
+                if cell_colors[i] != -1 and cell_colors[i] != target:
                     _paint_cell(i, true)
         "finish":
             phase = "done"
@@ -277,7 +313,7 @@ func _judge() -> void:
             fall.tween_property(pawn, "rotation", PI / 2.0, 0.5)
             fall.tween_property(pawn, "scale", Vector2(0.6, 0.6), 0.5)
     for i in cells.size():
-        if cell_colors[i] != target:
+        if cell_colors[i] != -1 and cell_colors[i] != target:
             _paint_cell(i, true)
     if _net:
         NetworkManager.broadcast_minigame_event("elim", {"out": eliminated_now})

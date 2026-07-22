@@ -14,6 +14,8 @@ signal trap_triggered(victim_id: int, owner_id: int, coins_lost: int)
 const MAX_SLOTS := 8
 const TRAP_PENALTY := 10
 const ROCKET_PENALTY := 15
+const PUNCH_PENALTY := 12
+const PUNCH_PUSHBACK := 3
 
 const POOL: Array = [
     {"id": "extra_roll", "name": "Extra Roll", "kind": "utility", "price": 10,
@@ -24,23 +26,31 @@ const POOL: Array = [
      "desc": "Wybierz dokladny wynik ruchu"},
     {"id": "swap", "name": "Swap", "kind": "utility", "price": 50,
      "desc": "Zamien sie pozycja z graczem"},
+    {"id": "reverse", "name": "Reverse", "kind": "utility", "price": 15,
+     "desc": "Nastepny ruch wykonujesz do tylu"},
+    {"id": "copy_cat", "name": "Copy Cat", "kind": "utility", "price": 15,
+     "desc": "Uzyj wyniku rzutu poprzedniego gracza"},
     {"id": "trap", "name": "Trap", "kind": "warfare", "price": 10,
      "desc": "Pulapka na twoim polu (-%d)" % TRAP_PENALTY},
     {"id": "rocket", "name": "Rocket", "kind": "warfare", "price": 20,
      "desc": "Wybrany gracz traci %d monet" % ROCKET_PENALTY},
     {"id": "magnet", "name": "Magnet", "kind": "warfare", "price": 20,
      "desc": "Kradnie 5-15 monet graczowi"},
+    {"id": "punch", "name": "Punch", "kind": "warfare", "price": 15,
+     "desc": "Cios: -%d monet i %d pola do tylu" % [PUNCH_PENALTY, PUNCH_PUSHBACK]},
 ]
 
 var _inventories := {}
 var _shields := {}
 var _traps := {}
+var _reverse := {}
 
 
 func reset(player_ids: Array) -> void:
     _inventories.clear()
     _shields.clear()
     _traps.clear()
+    _reverse.clear()
     for player_id in player_ids:
         _inventories[player_id] = []
         inventory_changed.emit(player_id, [])
@@ -90,12 +100,19 @@ func use_item(player_id: int, item_id: String, target_id: int = -1) -> void:
     match item_id:
         "shield":
             _shields[player_id] = true
+        "reverse":
+            _reverse[player_id] = true
         "trap":
             _traps[BoardManager.positions[player_id]] = player_id
         "rocket":
             if _consume_shield(target_id):
                 return
             EconomyManager.add_coins(target_id, -ROCKET_PENALTY)
+        "punch":
+            if _consume_shield(target_id):
+                return
+            EconomyManager.add_coins(target_id, -PUNCH_PENALTY)
+            BoardManager.push_back(target_id, PUNCH_PUSHBACK)
         "magnet":
             if _consume_shield(target_id):
                 return
@@ -105,6 +122,23 @@ func use_item(player_id: int, item_id: String, target_id: int = -1) -> void:
         "swap":
             BoardManager.swap_positions(player_id, target_id)
     item_used.emit(player_id, item_id, target_id)
+
+
+func consume_reverse(player_id: int) -> bool:
+    if _reverse.get(player_id, false):
+        _reverse.erase(player_id)
+        return true
+    return false
+
+
+func grant_random_item(player_id: int) -> String:
+    if _inventories[player_id].size() >= MAX_SLOTS:
+        return ""
+    var affordable := POOL.filter(func(i): return int(i["price"]) <= 20)
+    var item: Dictionary = affordable.pick_random()
+    _inventories[player_id].append(item["id"])
+    inventory_changed.emit(player_id, _inventories[player_id])
+    return item["id"]
 
 
 func trigger_trap(victim_id: int, tile_id: int) -> void:

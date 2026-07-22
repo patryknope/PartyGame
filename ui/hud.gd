@@ -31,6 +31,7 @@ func _ready() -> void:
     BoardManager.move_finished.connect(_on_move_finished)
     BoardManager.tile_resolved.connect(_on_tile_resolved)
     BoardManager.start_passed.connect(_on_start_passed)
+    BoardManager.bonus_item_granted.connect(_on_bonus_item_granted)
     EconomyManager.coins_changed.connect(_on_coins_changed)
     TrophyManager.trophy_offer.connect(_on_trophy_offer)
     TrophyManager.trophy_bought.connect(_on_trophy_bought)
@@ -313,8 +314,14 @@ func _on_tile_resolved(player_id: int, _tile_id: int, tile_type: String, coins_d
         status_label.text = "%s: +%d monet!" % [player["name"], coins_delta]
     elif coins_delta < 0:
         status_label.text = "%s: %d monet" % [player["name"], coins_delta]
-    else:
+    elif tile_type != "bonus":
         status_label.text = "%s: spokojne pole (%s)" % [player["name"], tile_type]
+
+
+func _on_bonus_item_granted(player_id: int, item_id: String) -> void:
+    var player := PlayerManager.get_player(player_id)
+    var item := ItemManager.get_definition(item_id)
+    status_label.text = "%s: pole bonusowe daje %s!" % [player["name"], item["name"]]
 
 
 func _on_start_passed(player_id: int, bonus: int) -> void:
@@ -412,7 +419,7 @@ func _on_items_button_pressed() -> void:
         empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         side_box.add_child(empty_label)
     for item_id in items:
-        if NetworkManager.is_online and item_id in ["extra_roll", "loaded_dice"]:
+        if NetworkManager.is_online and item_id in ["extra_roll", "loaded_dice", "copy_cat"]:
             continue
         var item := ItemManager.get_definition(item_id)
         _side_button(
@@ -425,7 +432,7 @@ func _on_items_button_pressed() -> void:
 func _on_use_item_pressed(item_id: String) -> void:
     var player_id := TurnManager.current_player_id()
     match item_id:
-        "rocket", "magnet", "swap":
+        "rocket", "magnet", "swap", "punch":
             _open_side_panel("Wybierz cel")
             for player in PlayerManager.players:
                 if player["id"] == player_id:
@@ -446,6 +453,11 @@ func _on_use_item_pressed(item_id: String) -> void:
             _open_side_panel("Loaded Dice")
             for steps in range(1, 11):
                 _side_button("Ruch: %d" % steps, _on_forced_move_pressed.bind(steps))
+        "copy_cat":
+            ItemManager.use_item(player_id, item_id)
+            var steps: int = GameManager.last_roll if GameManager.last_roll > 0 else Dice.roll(Dice.TYPES[0]["faces"])
+            _open_side_panel("Copy Cat")
+            _side_button("Ruch: %d" % steps, _on_forced_move_pressed.bind(steps))
         _:
             GameManager.request_item_use(player_id, item_id)
             _close_side_panel()
