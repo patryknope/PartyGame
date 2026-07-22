@@ -473,3 +473,37 @@ Buildings (GDD_BUILDINGS, Economic Building only):
 - Production (Courier) and Control Buildings deferred to a later pass
 
 Autotest also exercises shop purchases and building construction.
+
+---
+
+### IMPLEMENTED
+
+Etap 2 milestone: host-authoritative multiplayer + Steam preparation.
+
+Network layer (autoload/network_manager.gd), per GDD_PHASE2:
+- Host is the single authority; all game logic runs host-side only
+- Clients send input requests (roll, route, end turn, trophy/shop/item/
+  building actions); host validates the sender is the current player
+- Host relays every game event to clients together with a full state
+  snapshot (coins, positions, trophies, inventories, buildings, turn)
+- Transport: Godot High-Level Multiplayer API over ENet (LAN) —
+  swapping in GodotSteam's SteamMultiplayerPeer changes only two
+  functions (documented in STEAM.md)
+- LAN lobby in the main menu: host / join by IP / start by host
+- Kolorowy Chaos works online: each peer controls own bear, positions
+  synced unreliable, host judges rounds and eliminations
+- Verified end-to-end: two headless instances play a full 10-round
+  match over localhost with identical final state on both sides
+
+Steam preparation:
+- STEAM.md — full checklist: Steamworks account + app fee, App ID,
+  GodotSteam GDExtension install, SteamPipe upload, store page assets
+- steam_appid.txt (480 / Spacewar) for development
+- export_presets.cfg — Windows preset (embedded PCK, includes data/*.json)
+
+v1 limitations (documented in STEAM.md):
+- ENet/LAN until GodotSteam is installed (needs Steamworks account)
+- Mid-match disconnect aborts the session (grace period 5 s / timeout
+  60 s and reconnect are Etap 2.1 tasks)
+- Online minigame pool: Kolorowy Chaos (other two remain hotseat-only)
+- Extra Roll and Loaded Dice disabled online for now

@@ -12,6 +12,7 @@ const MINIGAMES: Array = [
         "rules": "Na arenie pojawia sie kolor docelowy.\nStan na polu w tym kolorze zanim minie czas!\nKto stoi na zlym kolorze — odpada.\nOstatni gracz na arenie wygrywa.",
         "min_players": 2,
         "max_players": 4,
+        "online": true,
     },
     {
         "id": "hot_potato",
@@ -34,9 +35,12 @@ const MINIGAMES: Array = [
 var current: Dictionary = {}
 
 
-func select_minigame(player_count: int) -> void:
+func select_minigame(player_count: int, online: bool = false) -> void:
     var pool := MINIGAMES.filter(
-        func(m): return player_count >= m["min_players"] and player_count <= m["max_players"]
+        func(m):
+            if player_count < m["min_players"] or player_count > m["max_players"]:
+                return false
+            return not online or m.get("online", false)
     )
     current = pool[randi() % pool.size()]
 

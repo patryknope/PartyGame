@@ -42,11 +42,17 @@ func _ready() -> void:
     GameManager.round_started.connect(_on_round_started)
     GameManager.minigame_rewards_granted.connect(_on_minigame_rewards)
     GameManager.match_ended.connect(_on_match_ended)
+    NetworkManager.minigame_start_requested.connect(_start_minigame)
 
-    if "autotest" in OS.get_cmdline_user_args():
+    var args := OS.get_cmdline_user_args()
+    if "autotest" in args:
         _setup_autotest()
-    elif "screenshots" in OS.get_cmdline_user_args():
+    elif "screenshots" in args:
         _screenshot_run()
+    elif "nethost" in args:
+        _setup_net_autotest(true)
+    elif "netjoin" in args:
+        _setup_net_autotest(false)
 
 
 func _on_state_changed(new_state: int) -> void:
@@ -76,7 +82,14 @@ func _show_minigame_intro() -> void:
     var panel := _make_panel()
     _panel_title(panel, info["name"])
     _panel_text(panel, info["rules"])
-    _panel_button(panel, "Start!", _start_minigame)
+    if NetworkManager.is_client():
+        _panel_text(panel, "Czekaj na start od hosta...")
+    else:
+        _panel_button(panel, "Start!", _on_minigame_start_pressed)
+
+
+func _on_minigame_start_pressed() -> void:
+    NetworkManager.start_minigame_for_all()
 
 
 func _start_minigame() -> void:
@@ -99,7 +112,15 @@ func _on_minigame_rewards(ranking: Array, rewards: Array) -> void:
         var player := PlayerManager.get_player(ranking[i])
         lines.append("%d. %s   +%d monet" % [i + 1, player["name"], rewards[i]])
     _panel_text(panel, "\n".join(lines))
-    _panel_button(panel, "Wroc na plansze", _on_results_confirmed)
+    if NetworkManager.is_client():
+        _panel_text(panel, "Czekaj na hosta...")
+        GameManager.state_changed.connect(_clear_overlay_on_resume, CONNECT_ONE_SHOT)
+    else:
+        _panel_button(panel, "Wroc na plansze", _on_results_confirmed)
+
+
+func _clear_overlay_on_resume(_new_state: int) -> void:
+    _clear_overlay()
 
 
 func _on_results_confirmed() -> void:
@@ -117,7 +138,15 @@ func _on_match_ended(final_ranking: Array) -> void:
         var coins := EconomyManager.get_coins(final_ranking[i])
         lines.append("%d. %s — ★ %d, %d monet" % [i + 1, player["name"], trophies, coins])
     _panel_text(panel, "\n".join(lines))
-    _panel_button(panel, "Nowy mecz", func(): GameManager.return_to_menu())
+    if NetworkManager.is_online:
+        _panel_button(panel, "Rozlacz i wroc do menu", _on_net_match_end_leave)
+    else:
+        _panel_button(panel, "Nowy mecz", func(): GameManager.return_to_menu())
+
+
+func _on_net_match_end_leave() -> void:
+    NetworkManager.leave_game()
+    GameManager.return_to_menu()
 
 
 func _free_minigame() -> void:
@@ -202,6 +231,80 @@ func _capture(shot_name: String) -> void:
     DirAccess.make_dir_recursive_absolute(dir)
     image.save_png(dir + "/" + shot_name + ".png")
     print("[SHOT] " + shot_name)
+
+
+# ── Network autotest: two headless instances (nethost / netjoin) ──
+
+var _net_match_started := false
+
+
+func _setup_net_autotest(as_host: bool) -> void:
+    print("[NET] begin as %s" % ("host" if as_host else "client"))
+    _setup_net_drivers()
+    GameManager.match_ended.connect(_net_autotest_on_match_end)
+    get_tree().create_timer(120.0).timeout.connect(_net_autotest_watchdog)
+    if as_host:
+        NetworkManager.host_game()
+        NetworkManager.network_players_changed.connect(_net_autotest_on_players)
+        GameManager.state_changed.connect(_net_autotest_on_state)
+        GameManager.minigame_rewards_granted.connect(
+            func(_r, _w): GameManager.continue_after_minigame.call_deferred()
+        )
+    else:
+        NetworkManager.connection_failed.connect(func(): get_tree().quit(1))
+        NetworkManager.join_game("127.0.0.1")
+
+
+func _setup_net_drivers() -> void:
+    TurnManager.turn_started.connect(
+        func(pid): if GameManager.local_can_act(pid): GameManager.request_roll.call_deferred(0)
+    )
+    BoardManager.route_choice_required.connect(
+        func(pid, opts): if GameManager.local_can_act(pid): GameManager.request_route.call_deferred(opts[0])
+    )
+    BoardManager.move_finished.connect(
+        func(pid): if GameManager.local_can_act(pid): GameManager.request_end_turn.call_deferred()
+    )
+    TrophyManager.trophy_offer.connect(
+        func(pid, _c): if GameManager.local_can_act(pid): GameManager.request_trophy.call_deferred(true)
+    )
+    BuildingManager.build_offer.connect(
+        func(pid, _t, _c): if GameManager.local_can_act(pid): GameManager.request_building.call_deferred(true)
+    )
+    BuildingManager.upgrade_offer.connect(
+        func(pid, _t, _c, _l): if GameManager.local_can_act(pid): GameManager.request_building.call_deferred(true)
+    )
+
+
+func _net_autotest_on_players(count: int) -> void:
+    if count >= 2 and not _net_match_started:
+        _net_match_started = true
+        print("[NET] client joined, starting match")
+        NetworkManager.start_network_match.call_deferred(10)
+
+
+func _net_autotest_on_state(new_state: int) -> void:
+    if new_state == GameManager.State.MINIGAME and NetworkManager.is_server():
+        var ids: Array = PlayerManager.get_player_ids().duplicate()
+        ids.shuffle()
+        MinigameManager.report_finished.call_deferred(ids)
+
+
+func _net_autotest_on_match_end(final_ranking: Array) -> void:
+    for i in final_ranking.size():
+        var pid: int = final_ranking[i]
+        print("[NET] FINAL %d. player%d trophies=%d coins=%d" % [
+            i + 1, pid, TrophyManager.get_trophies(pid), EconomyManager.get_coins(pid),
+        ])
+    print("[NET] OK")
+    await get_tree().create_timer(1.0).timeout
+    get_tree().quit(0)
+
+
+func _net_autotest_watchdog() -> void:
+    if GameManager.state != GameManager.State.MATCH_END:
+        push_error("[NET] TIMEOUT")
+        get_tree().quit(1)
 
 
 # ── Autotest (headless verification): godot --headless -- autotest ──

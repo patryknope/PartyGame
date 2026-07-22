@@ -77,6 +77,8 @@ func _owns_economic(player_id: int) -> bool:
 
 
 func _on_turn_started(player_id: int) -> void:
+    if NetworkManager.is_client():
+        return
     var amount := 0
     for tile_id in buildings:
         if buildings[tile_id]["owner"] == player_id:

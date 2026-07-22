@@ -55,6 +55,65 @@ func roll_dice(dice_index: int = 0) -> void:
     BoardManager.begin_move(player_id, last_roll)
 
 
+func local_can_act(player_id: int) -> bool:
+    if not NetworkManager.is_online:
+        return true
+    return NetworkManager.my_player_id == player_id
+
+
+func request_roll(dice_index: int) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("roll", [dice_index])
+    else:
+        roll_dice(dice_index)
+
+
+func request_end_turn() -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("end_turn")
+    else:
+        end_turn()
+
+
+func request_route(tile_id: int) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("route", [tile_id])
+    else:
+        BoardManager.choose_route(tile_id)
+
+
+func request_trophy(buy: bool) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("trophy_buy" if buy else "trophy_skip")
+    elif buy:
+        TrophyManager.buy()
+    else:
+        TrophyManager.skip()
+
+
+func request_shop_buy(player_id: int, item_id: String) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("shop_buy", [item_id])
+    else:
+        ItemManager.buy(player_id, item_id)
+
+
+func request_item_use(player_id: int, item_id: String, target_id: int = -1) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("item_use", [item_id, target_id])
+    else:
+        ItemManager.use_item(player_id, item_id, target_id)
+
+
+func request_building(confirm: bool) -> void:
+    if NetworkManager.is_client():
+        NetworkManager.send_request("build_confirm" if confirm else "build_skip")
+    elif confirm:
+        BuildingManager.confirm()
+    else:
+        BuildingManager.skip()
+
+
 func move_forced(steps: int) -> void:
     if state != State.PLAYER_TURN:
         return
@@ -92,6 +151,8 @@ func return_to_menu() -> void:
 
 
 func _on_move_finished(player_id: int) -> void:
+    if NetworkManager.is_client():
+        return
     if last_roll > 0:
         BoardManager.resolve_tile(player_id)
         var tile_id: int = BoardManager.positions[player_id]
@@ -104,11 +165,15 @@ func _on_move_finished(player_id: int) -> void:
 
 
 func _on_all_turns_completed() -> void:
-    MinigameManager.select_minigame(PlayerManager.player_count())
+    if NetworkManager.is_client():
+        return
+    MinigameManager.select_minigame(PlayerManager.player_count(), NetworkManager.is_online)
     _set_state(State.MINIGAME)
 
 
 func _on_minigame_finished(ranking: Array) -> void:
+    if NetworkManager.is_client():
+        return
     last_minigame_ranking = ranking
     last_minigame_rewards = []
     for i in ranking.size():

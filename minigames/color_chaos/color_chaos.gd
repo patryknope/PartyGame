@@ -43,6 +43,9 @@ var banner_label: Label
 var timer_bar: Panel
 var round_label: Label
 
+var _net := false
+var _my_pid := -1
+
 
 func _ready() -> void:
     var background := Scenery.new()
@@ -88,7 +91,15 @@ func _ready() -> void:
 
     _build_cells()
     _spawn_players()
-    _start_round()
+    _net = NetworkManager.is_online
+    _my_pid = NetworkManager.my_player_id
+    if _net:
+        NetworkManager.minigame_positions.connect(_on_net_positions)
+        NetworkManager.minigame_event.connect(_on_net_event)
+    if not _net or NetworkManager.is_server():
+        _start_round()
+    else:
+        phase = "wait"
 
 
 func _build_cells() -> void:
@@ -143,6 +154,11 @@ func _start_round() -> void:
     round_time = clampf(3.4 - 0.25 * round_num, 1.2, 3.4)
     timer = round_time
     phase = "move"
+    if _net:
+        NetworkManager.broadcast_minigame_event("round", {
+            "colors": cell_colors.duplicate(), "target": target,
+            "time": round_time, "num": round_num,
+        })
 
 
 func _process(delta: float) -> void:
@@ -151,16 +167,9 @@ func _process(delta: float) -> void:
     for pid in player_nodes:
         if not alive[pid]:
             continue
-        var keys: Array = KEY_SETS[pid]
-        var direction := Vector2.ZERO
-        if Input.is_physical_key_pressed(keys[0]):
-            direction.y -= 1
-        if Input.is_physical_key_pressed(keys[1]):
-            direction.y += 1
-        if Input.is_physical_key_pressed(keys[2]):
-            direction.x -= 1
-        if Input.is_physical_key_pressed(keys[3]):
-            direction.x += 1
+        if _net and pid != _my_pid:
+            continue
+        var direction := _read_direction(pid)
         var node: BearCharacter = player_nodes[pid]
         if direction != Vector2.ZERO:
             node.position += direction.normalized() * SPEED * delta
@@ -171,14 +180,85 @@ func _process(delta: float) -> void:
             node.rotation = sin(Time.get_ticks_msec() / 1000.0 * 15.0 + pid) * 0.09
         else:
             node.rotation = lerpf(node.rotation, 0.0, 12.0 * delta)
+    if _net:
+        if NetworkManager.is_server():
+            var all_positions := {}
+            for pid in player_nodes:
+                all_positions[pid] = player_nodes[pid].position
+            NetworkManager.broadcast_minigame_positions(all_positions)
+        else:
+            NetworkManager.send_minigame_position(player_nodes[_my_pid].position)
     timer -= delta
     timer_bar.size.x = 600.0 * maxf(timer, 0.0) / round_time
     if timer <= 0.0:
-        _judge()
+        if not _net or NetworkManager.is_server():
+            _judge()
+        else:
+            phase = "wait"
+
+
+func _read_direction(pid: int) -> Vector2:
+    var direction := Vector2.ZERO
+    var key_sets: Array = [KEY_SETS[pid]] if not _net else [KEY_SETS[0], KEY_SETS[1]]
+    for keys in key_sets:
+        if Input.is_physical_key_pressed(keys[0]):
+            direction.y -= 1
+        if Input.is_physical_key_pressed(keys[1]):
+            direction.y += 1
+        if Input.is_physical_key_pressed(keys[2]):
+            direction.x -= 1
+        if Input.is_physical_key_pressed(keys[3]):
+            direction.x += 1
+    return direction
+
+
+func _on_net_positions(positions: Dictionary) -> void:
+    for pid in positions:
+        if pid == _my_pid and NetworkManager.is_client():
+            continue
+        if player_nodes.has(pid):
+            player_nodes[pid].position = positions[pid]
+
+
+func _on_net_event(kind: String, data: Dictionary) -> void:
+    match kind:
+        "round":
+            round_num = data["num"]
+            for i in cells.size():
+                cell_colors[i] = data["colors"][i]
+                _paint_cell(i, false)
+            target = data["target"]
+            round_label.text = "Runda %d" % round_num
+            banner_label.text = "Stan na: %s" % COLOR_NAMES[target]
+            banner.add_theme_stylebox_override(
+                "panel", UiStyle.flat(CHAOS_COLORS[target].darkened(0.15), 16, 3, Color(1, 1, 1, 0.85), 8)
+            )
+            round_time = data["time"]
+            timer = round_time
+            phase = "move"
+        "elim":
+            for pid in data["out"]:
+                alive[pid] = false
+                var pawn: BearCharacter = player_nodes[pid]
+                pawn.show_emote("shock")
+                var fall := create_tween()
+                fall.set_parallel()
+                fall.tween_property(pawn, "modulate:a", 0.25, 0.5)
+                fall.tween_property(pawn, "rotation", PI / 2.0, 0.5)
+                fall.tween_property(pawn, "scale", Vector2(0.6, 0.6), 0.5)
+            for i in cells.size():
+                if cell_colors[i] != target:
+                    _paint_cell(i, true)
+        "finish":
+            phase = "done"
+            var ranking: Array = data["ranking"]
+            if not ranking.is_empty():
+                banner_label.text = "Wygrywa: %s!" % PlayerManager.get_player(ranking[0])["name"]
 
 
 func _judge() -> void:
     phase = "pause"
+    var eliminated_now: Array = []
     for pid in player_nodes:
         if not alive[pid]:
             continue
@@ -188,6 +268,7 @@ func _judge() -> void:
         if cell_colors[row * COLS + col] != target:
             alive[pid] = false
             elimination_order.append(pid)
+            eliminated_now.append(pid)
             var pawn: BearCharacter = player_nodes[pid]
             pawn.show_emote("shock")
             var fall := create_tween()
@@ -198,6 +279,8 @@ func _judge() -> void:
     for i in cells.size():
         if cell_colors[i] != target:
             _paint_cell(i, true)
+    if _net:
+        NetworkManager.broadcast_minigame_event("elim", {"out": eliminated_now})
     var alive_count := 0
     for pid in alive:
         if alive[pid]:
@@ -243,5 +326,7 @@ func _finish() -> void:
         confetti.position = player_nodes[ranking[0]].position - Vector2(0, 26)
         confetti.emitting = true
         add_child(confetti)
+    if _net:
+        NetworkManager.broadcast_minigame_event("finish", {"ranking": ranking})
     await get_tree().create_timer(1.6).timeout
     MinigameManager.report_finished(ranking)

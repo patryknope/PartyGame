@@ -228,14 +228,19 @@ func _on_round_started(round_number: int) -> void:
 
 func _on_turn_started(player_id: int) -> void:
     var player := PlayerManager.get_player(player_id)
-    status_label.text = "Tura gracza: %s — wybierz kosc" % player["name"]
-    dice_box.visible = true
+    var mine := GameManager.local_can_act(player_id)
+    if mine:
+        status_label.text = "Tura gracza: %s — wybierz kosc" % player["name"]
+    else:
+        status_label.text = "Tura gracza: %s..." % player["name"]
+    dice_box.visible = mine
     end_turn_button.visible = false
     route_box.visible = false
     trophy_box.visible = false
     dice_panel.visible = false
-    items_button.visible = true
-    _refresh_items_button(player_id)
+    items_button.visible = mine
+    if mine:
+        _refresh_items_button(player_id)
     _close_side_panel()
     _highlight_card(player_id)
 
@@ -244,7 +249,7 @@ func _on_dice_pressed(dice_index: int) -> void:
     dice_box.visible = false
     items_button.visible = false
     _close_side_panel()
-    GameManager.roll_dice(dice_index)
+    GameManager.request_roll(dice_index)
 
 
 func _on_dice_rolled(player_id: int, result: int) -> void:
@@ -272,7 +277,10 @@ func _animate_dice(player_name: String, result: int) -> void:
         status_label.text = "%s wyrzucil: %d" % [player_name, result]
 
 
-func _on_route_choice_required(_player_id: int, options: Array) -> void:
+func _on_route_choice_required(player_id: int, options: Array) -> void:
+    if not GameManager.local_can_act(player_id):
+        status_label.text = "%s wybiera trase..." % PlayerManager.get_player(player_id)["name"]
+        return
     for child in route_box.get_children():
         child.queue_free()
     for option in options:
@@ -288,11 +296,11 @@ func _on_route_choice_required(_player_id: int, options: Array) -> void:
 
 func _on_route_pressed(tile_id: int) -> void:
     route_box.visible = false
-    BoardManager.choose_route(tile_id)
+    GameManager.request_route(tile_id)
 
 
-func _on_move_finished(_player_id: int) -> void:
-    end_turn_button.visible = true
+func _on_move_finished(player_id: int) -> void:
+    end_turn_button.visible = GameManager.local_can_act(player_id)
 
 
 func _on_tile_resolved(player_id: int, _tile_id: int, tile_type: String, coins_delta: int) -> void:
@@ -312,7 +320,7 @@ func _on_start_passed(player_id: int, bonus: int) -> void:
 
 func _on_end_turn_pressed() -> void:
     end_turn_button.visible = false
-    GameManager.end_turn()
+    GameManager.request_end_turn()
 
 
 func _on_coins_changed(player_id: int, coins: int) -> void:
@@ -323,17 +331,17 @@ func _on_coins_changed(player_id: int, coins: int) -> void:
 func _on_trophy_offer(player_id: int, cost: int) -> void:
     var player := PlayerManager.get_player(player_id)
     status_label.text = "%s: kupic trofeum za %d monet?" % [player["name"], cost]
-    trophy_box.visible = true
+    trophy_box.visible = GameManager.local_can_act(player_id)
 
 
 func _on_trophy_buy_pressed() -> void:
     trophy_box.visible = false
-    TrophyManager.buy()
+    GameManager.request_trophy(true)
 
 
 func _on_trophy_skip_pressed() -> void:
     trophy_box.visible = false
-    TrophyManager.skip()
+    GameManager.request_trophy(false)
 
 
 func _on_trophy_bought(player_id: int, count: int) -> void:
@@ -400,6 +408,8 @@ func _on_items_button_pressed() -> void:
         empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
         side_box.add_child(empty_label)
     for item_id in items:
+        if NetworkManager.is_online and item_id in ["extra_roll", "loaded_dice"]:
+            continue
         var item := ItemManager.get_definition(item_id)
         _side_button(
             "%s\n%s" % [item["name"], item["desc"]],
@@ -433,12 +443,12 @@ func _on_use_item_pressed(item_id: String) -> void:
             for steps in range(1, 11):
                 _side_button("Ruch: %d" % steps, _on_forced_move_pressed.bind(steps))
         _:
-            ItemManager.use_item(player_id, item_id)
+            GameManager.request_item_use(player_id, item_id)
             _close_side_panel()
 
 
 func _on_target_pressed(item_id: String, target_id: int) -> void:
-    ItemManager.use_item(TurnManager.current_player_id(), item_id, target_id)
+    GameManager.request_item_use(TurnManager.current_player_id(), item_id, target_id)
     _close_side_panel()
 
 
@@ -451,8 +461,10 @@ func _on_forced_move_pressed(steps: int) -> void:
 
 func _on_shop_opened(player_id: int, offers: Array) -> void:
     var player := PlayerManager.get_player(player_id)
-    _open_side_panel("Sklep")
     status_label.text = "%s wchodzi do sklepu" % player["name"]
+    if not GameManager.local_can_act(player_id):
+        return
+    _open_side_panel("Sklep")
     for item in offers:
         _side_button(
             "%s (%d monet)\n%s" % [item["name"], item["price"], item["desc"]],
@@ -463,15 +475,15 @@ func _on_shop_opened(player_id: int, offers: Array) -> void:
 
 
 func _on_shop_buy_pressed(player_id: int, item_id: String) -> void:
-    if ItemManager.buy(player_id, item_id):
-        var item := ItemManager.get_definition(item_id)
-        status_label.text = "%s kupuje: %s" % [PlayerManager.get_player(player_id)["name"], item["name"]]
+    GameManager.request_shop_buy(player_id, item_id)
     _close_side_panel()
 
 
 func _on_build_offer(player_id: int, _tile_id: int, cost: int) -> void:
-    _open_side_panel("Wolna dzialka!")
     status_label.text = "%s moze postawic budynek" % PlayerManager.get_player(player_id)["name"]
+    if not GameManager.local_can_act(player_id):
+        return
+    _open_side_panel("Wolna dzialka!")
     _side_button(
         "Postaw budynek ekonomiczny (%d monet)\n+%d monet co ture za poziom" % [
             cost, BuildingManager.INCOME_PER_LEVEL,
@@ -482,8 +494,10 @@ func _on_build_offer(player_id: int, _tile_id: int, cost: int) -> void:
 
 
 func _on_upgrade_offer(player_id: int, _tile_id: int, cost: int, next_level: int) -> void:
-    _open_side_panel("Budowniczy")
     status_label.text = "%s moze ulepszyc budynek" % PlayerManager.get_player(player_id)["name"]
+    if not GameManager.local_can_act(player_id):
+        return
+    _open_side_panel("Budowniczy")
     _side_button(
         "Ulepsz do poziomu %d (%d monet)" % [next_level, cost],
         _on_building_confirm_pressed,
@@ -492,12 +506,12 @@ func _on_upgrade_offer(player_id: int, _tile_id: int, cost: int, next_level: int
 
 
 func _on_building_confirm_pressed() -> void:
-    BuildingManager.confirm()
+    GameManager.request_building(true)
     _close_side_panel()
 
 
 func _on_building_skip_pressed() -> void:
-    BuildingManager.skip()
+    GameManager.request_building(false)
     _close_side_panel()
 
 
