@@ -5,6 +5,7 @@ extends Node2D
 # Idle bobbing, blinking, hop animation and a gold highlight ring.
 
 var base_color := Color(0.8, 0.4, 0.3)
+var accessory := -1
 var highlight := false:
     set(value):
         highlight = value
@@ -15,6 +16,61 @@ var _bob := 0.0:
         _bob = value
         queue_redraw()
 var _eyes_closed := false
+
+
+class EmoteBubble extends Node2D:
+    var kind := "happy"
+
+    func _ready() -> void:
+        scale = Vector2(0.2, 0.2)
+        var tween := create_tween()
+        tween.tween_property(self, "scale", Vector2.ONE, 0.16)\
+            .set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+        tween.tween_interval(1.0)
+        tween.tween_property(self, "modulate:a", 0.0, 0.25)
+        tween.finished.connect(queue_free)
+
+    func _draw() -> void:
+        var ink := Color(0.15, 0.13, 0.15)
+        draw_circle(Vector2.ZERO, 13, Color(1, 1, 1, 0.96))
+        draw_colored_polygon(
+            PackedVector2Array([Vector2(-7, 9), Vector2(-3, 18), Vector2(1, 9)]),
+            Color(1, 1, 1, 0.96)
+        )
+        match kind:
+            "happy":
+                draw_circle(Vector2(-4, -3), 1.6, ink)
+                draw_circle(Vector2(4, -3), 1.6, ink)
+                draw_arc(Vector2(0, 0), 6, 0.5, PI - 0.5, 12, ink, 2, true)
+            "sad":
+                draw_circle(Vector2(-4, -3), 1.6, ink)
+                draw_circle(Vector2(4, -3), 1.6, ink)
+                draw_arc(Vector2(0, 8), 6, PI + 0.5, TAU - 0.5, 12, ink, 2, true)
+                draw_circle(Vector2(6, 2), 2, Color(0.4, 0.65, 0.95))
+            "angry":
+                draw_line(Vector2(-7, -5), Vector2(-2, -3), ink, 2, true)
+                draw_line(Vector2(7, -5), Vector2(2, -3), ink, 2, true)
+                draw_arc(Vector2(0, 8), 6, PI + 0.5, TAU - 0.5, 12, ink, 2, true)
+            "shock":
+                draw_rect(Rect2(-1.5, -8, 3, 9), Color(0.85, 0.25, 0.25))
+                draw_circle(Vector2(0, 5), 1.8, Color(0.85, 0.25, 0.25))
+            "coin":
+                draw_circle(Vector2.ZERO, 7, Color(0.95, 0.78, 0.3))
+                draw_arc(Vector2.ZERO, 4.5, 0, TAU, 16, Color(0.75, 0.56, 0.15), 1.6, true)
+            "star":
+                var points := PackedVector2Array()
+                for i in 10:
+                    var radius := 8.0 if i % 2 == 0 else 3.5
+                    var angle := -PI / 2.0 + TAU * i / 10.0
+                    points.append(Vector2(cos(angle), sin(angle)) * radius)
+                draw_colored_polygon(points, Color(0.95, 0.78, 0.3))
+
+
+func show_emote(kind: String) -> void:
+    var bubble := EmoteBubble.new()
+    bubble.kind = kind
+    bubble.position = Vector2(17, -62)
+    add_child(bubble)
 
 
 func _ready() -> void:
@@ -93,6 +149,9 @@ func _draw() -> void:
     draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
     draw_circle(Vector2(0, y - 31), 2.3, ink)
 
+    draw_circle(Vector2(-9.5, y - 30), 2.6, Color(1, 0.55, 0.55, 0.4))
+    draw_circle(Vector2(9.5, y - 30), 2.6, Color(1, 0.55, 0.55, 0.4))
+
     if _eyes_closed:
         draw_line(Vector2(-7, y - 35), Vector2(-2.5, y - 35), ink, 1.6, true)
         draw_line(Vector2(2.5, y - 35), Vector2(7, y - 35), ink, 1.6, true)
@@ -101,3 +160,27 @@ func _draw() -> void:
         draw_circle(Vector2(4.8, y - 35), 2.5, Color.WHITE)
         draw_circle(Vector2(-4.4, y - 35), 1.35, ink)
         draw_circle(Vector2(5.2, y - 35), 1.35, ink)
+
+    match accessory:
+        0:
+            var cap := Color(0.2, 0.3, 0.55)
+            draw_circle(Vector2(0, y - 44), 7.5, cap)
+            draw_rect(Rect2(Vector2(-1, y - 45), Vector2(13, 3.5)), cap.lightened(0.2))
+        1:
+            draw_arc(Vector2(-4.8, y - 35), 4.2, 0, TAU, 14, ink, 1.6, true)
+            draw_arc(Vector2(4.8, y - 35), 4.2, 0, TAU, 14, ink, 1.6, true)
+            draw_line(Vector2(-0.8, y - 35), Vector2(0.8, y - 35), ink, 1.6, true)
+        2:
+            var bow := Color(0.75, 0.2, 0.3)
+            draw_colored_polygon(
+                PackedVector2Array([Vector2(-8, y - 22), Vector2(-1, y - 19), Vector2(-8, y - 15)]), bow
+            )
+            draw_colored_polygon(
+                PackedVector2Array([Vector2(8, y - 22), Vector2(1, y - 19), Vector2(8, y - 15)]), bow
+            )
+            draw_circle(Vector2(0, y - 19), 2.2, bow.lightened(0.25))
+        3:
+            for i in 5:
+                var angle := TAU * i / 5.0
+                draw_circle(Vector2(-11, y - 48) + Vector2(cos(angle), sin(angle)) * 3.4, 2.2, Color.WHITE)
+            draw_circle(Vector2(-11, y - 48), 2.2, Color(0.98, 0.8, 0.3))

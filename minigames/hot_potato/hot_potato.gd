@@ -83,6 +83,7 @@ func _ready() -> void:
         var pid: int = player["id"]
         var bear := BearCharacter.new()
         bear.base_color = player["color"]
+        bear.accessory = pid
         bear.scale = Vector2(0.9, 0.9)
         bear.position = ARENA.get_center() + SPAWN_OFFSETS[pid]
         add_child(bear)
@@ -151,6 +152,7 @@ func _explode() -> void:
     var victim := holder
     alive[victim] = false
     elimination_order.append(victim)
+    player_nodes[victim].show_emote("shock")
     banner_label.text = "BUM! %s odpada!" % PlayerManager.get_player(victim)["name"]
 
     var blast := CPUParticles2D.new()

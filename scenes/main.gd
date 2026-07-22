@@ -217,6 +217,13 @@ func _setup_autotest() -> void:
         func(_ranking, _rewards): GameManager.continue_after_minigame.call_deferred()
     )
     TrophyManager.trophy_offer.connect(func(_pid, _cost): TrophyManager.buy.call_deferred())
+    ItemManager.shop_opened.connect(_autotest_on_shop)
+    BuildingManager.build_offer.connect(
+        func(_pid, _tile, _cost): BuildingManager.confirm.call_deferred()
+    )
+    BuildingManager.upgrade_offer.connect(
+        func(_pid, _tile, _cost, _level): BuildingManager.confirm.call_deferred()
+    )
     GameManager.state_changed.connect(_autotest_on_state)
     GameManager.match_ended.connect(_autotest_on_match_end)
     get_tree().create_timer(60.0).timeout.connect(_autotest_watchdog)
@@ -230,6 +237,12 @@ func _autotest_watchdog() -> void:
     if _autotest_matches_played < 2:
         push_error("[AUTOTEST] TIMEOUT")
         get_tree().quit(1)
+
+
+func _autotest_on_shop(player_id: int, offers: Array) -> void:
+    var item: Dictionary = offers[0]
+    if EconomyManager.get_coins(player_id) >= int(item["price"]):
+        ItemManager.buy.bind(player_id, String(item["id"])).call_deferred()
 
 
 func _autotest_on_state(new_state: int) -> void:

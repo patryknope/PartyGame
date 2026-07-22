@@ -110,6 +110,7 @@ func _ready() -> void:
         var pid: int = player["id"]
         var bear := BearCharacter.new()
         bear.base_color = player["color"]
+        bear.accessory = pid
         bear.scale = Vector2(0.9, 0.9)
         bear.position = ARENA.get_center() + SPAWN_OFFSETS[pid]
         add_child(bear)
@@ -182,6 +183,7 @@ func _process(delta: float) -> void:
 func _crown_to(player_id: int) -> void:
     crown_holder = player_id
     steal_cooldown = 0.8
+    player_nodes[player_id].show_emote("happy")
     banner_label.text = "Korone ma: %s!" % PlayerManager.get_player(player_id)["name"]
 
 

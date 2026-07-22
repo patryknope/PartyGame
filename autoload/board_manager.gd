@@ -4,6 +4,7 @@ extends Node
 # Board layout is data-driven (res://data/casino_board.json).
 
 signal player_stepped(player_id: int, tile_id: int)
+signal player_placed(player_id: int, tile_id: int)
 signal route_choice_required(player_id: int, options: Array)
 signal move_finished(player_id: int)
 signal tile_resolved(player_id: int, tile_id: int, tile_type: String, coins_delta: int)
@@ -82,6 +83,14 @@ func _advance() -> void:
         route_choice_required.emit(_moving_player, options)
         return
     _step_to(options[0])
+
+
+func swap_positions(player_a: int, player_b: int) -> void:
+    var tile_a: int = positions[player_a]
+    positions[player_a] = positions[player_b]
+    positions[player_b] = tile_a
+    player_placed.emit(player_a, positions[player_a])
+    player_placed.emit(player_b, positions[player_b])
 
 
 func resume_move() -> void:

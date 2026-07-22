@@ -39,6 +39,94 @@ class Cloud extends Node2D:
         draw_circle(Vector2(4, 12), 22, color)
 
 
+class Bird extends Node2D:
+    var speed := 60.0
+    var flap := 0.0
+
+    func _process(delta: float) -> void:
+        flap += delta * 9.0
+        position.x += speed * delta
+        position.y += sin(flap * 0.6) * 0.25
+        if position.x > 1340:
+            position.x = -60
+            position.y = 46 + randf() * 120
+        queue_redraw()
+
+    func _draw() -> void:
+        var ink := Color(0.2, 0.22, 0.32, 0.9)
+        var wing := sin(flap) * 7.0
+        draw_line(Vector2(-9, 0), Vector2(0, -wing), ink, 2.6, true)
+        draw_line(Vector2(0, -wing), Vector2(9, 0), ink, 2.6, true)
+
+
+class Butterfly extends Node2D:
+    var origin := Vector2.ZERO
+    var wing_color := Color(0.92, 0.55, 0.8)
+    var t := randf() * 10.0
+
+    func _process(delta: float) -> void:
+        t += delta
+        position = origin + Vector2(sin(t * 0.8) * 44.0, sin(t * 1.7) * 20.0)
+        queue_redraw()
+
+    func _draw() -> void:
+        var spread := absf(sin(t * 11.0)) * 0.7 + 0.35
+        draw_set_transform(Vector2(-2, 0), -0.25, Vector2(spread, 1.0))
+        draw_circle(Vector2(-4, 0), 5, wing_color)
+        draw_set_transform(Vector2(2, 0), 0.25, Vector2(spread, 1.0))
+        draw_circle(Vector2(4, 0), 5, wing_color)
+        draw_set_transform(Vector2.ZERO, 0, Vector2.ONE)
+        draw_circle(Vector2.ZERO, 1.7, Color(0.2, 0.2, 0.25))
+
+
+class RiverFlow extends Node2D:
+    const POINTS: Array[Vector2] = [
+        Vector2(340, 206), Vector2(420, 300), Vector2(520, 380),
+        Vector2(640, 430), Vector2(760, 452),
+    ]
+    const FALL_TOP := Vector2(340, 152)
+
+    var _offset := 0.0
+
+    func _process(delta: float) -> void:
+        _offset = fmod(_offset + delta * 46.0, 26.0)
+        queue_redraw()
+
+    func _draw() -> void:
+        var deep := Color(0.25, 0.48, 0.68)
+        var light := Color(0.45, 0.68, 0.88)
+        var packed := PackedVector2Array(POINTS)
+        draw_polyline(packed, deep, 16, true)
+        draw_polyline(packed, light, 10, true)
+
+        draw_rect(Rect2(FALL_TOP - Vector2(7, 0), Vector2(14, POINTS[0].y - FALL_TOP.y)), light)
+        draw_rect(Rect2(FALL_TOP - Vector2(3, 0), Vector2(3, POINTS[0].y - FALL_TOP.y)), Color(1, 1, 1, 0.7))
+        var fall_phase := fmod(_offset, 14.0)
+        for i in 4:
+            var y := FALL_TOP.y + fall_phase + i * 14.0
+            if y < POINTS[0].y:
+                draw_circle(Vector2(FALL_TOP.x + 2, y), 2.2, Color(1, 1, 1, 0.85))
+        var foam_pulse := 2.0 + sin(_offset * 0.6) * 0.8
+        draw_circle(POINTS[0] + Vector2(-6, 2), foam_pulse + 2.0, Color(1, 1, 1, 0.6))
+        draw_circle(POINTS[0] + Vector2(6, 3), foam_pulse + 1.0, Color(1, 1, 1, 0.5))
+
+        for i in range(POINTS.size() - 1):
+            var from := POINTS[i]
+            var to := POINTS[i + 1]
+            var length := from.distance_to(to)
+            var direction := (to - from) / length
+            var travelled := _offset
+            while travelled + 7.0 < length:
+                draw_line(
+                    from + direction * travelled,
+                    from + direction * (travelled + 7.0),
+                    Color(1, 1, 1, 0.55),
+                    2.5,
+                    true
+                )
+                travelled += 26.0
+
+
 func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
     for i in 3:
@@ -46,6 +134,23 @@ func _ready() -> void:
         cloud.position = Vector2(190 + i * 420, 62 + (i % 2) * 38)
         cloud.drift = 26.0 + i * 14.0
         add_child(cloud)
+    add_child(RiverFlow.new())
+    for i in 4:
+        var bird := Bird.new()
+        bird.position = Vector2(randf() * 1280.0, 50 + i * 32.0)
+        bird.speed = 46.0 + i * 14.0
+        add_child(bird)
+    var butterfly_colors: Array[Color] = [
+        Color(0.92, 0.55, 0.8), Color(0.55, 0.7, 0.95), Color(0.98, 0.8, 0.4),
+    ]
+    var butterfly_spots: Array[Vector2] = [
+        Vector2(200, 560), Vector2(1080, 540), Vector2(480, 270),
+    ]
+    for i in 3:
+        var butterfly := Butterfly.new()
+        butterfly.origin = butterfly_spots[i]
+        butterfly.wing_color = butterfly_colors[i]
+        add_child(butterfly)
 
 
 func _draw() -> void:

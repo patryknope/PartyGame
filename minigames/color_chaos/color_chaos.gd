@@ -108,6 +108,7 @@ func _spawn_players() -> void:
         var pid: int = player["id"]
         var bear := BearCharacter.new()
         bear.base_color = player["color"]
+        bear.accessory = pid
         bear.scale = Vector2(0.9, 0.9)
         bear.position = ARENA.get_center() + SPAWN_OFFSETS[pid]
         add_child(bear)
@@ -188,6 +189,7 @@ func _judge() -> void:
             alive[pid] = false
             elimination_order.append(pid)
             var pawn: BearCharacter = player_nodes[pid]
+            pawn.show_emote("shock")
             var fall := create_tween()
             fall.set_parallel()
             fall.tween_property(pawn, "modulate:a", 0.25, 0.5)

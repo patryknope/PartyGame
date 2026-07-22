@@ -11,11 +11,15 @@ var route_box: HBoxContainer
 var trophy_box: HBoxContainer
 var dice_panel: Panel
 var dice_label: Label
+var items_button: Button
+var side_panel: Panel
+var side_box: VBoxContainer
 var player_cards := {}
 var coin_labels := {}
 var trophy_labels := {}
 
 var _dice_anim_id := 0
+var _items_open := false
 
 
 func _ready() -> void:
@@ -31,6 +35,14 @@ func _ready() -> void:
     TrophyManager.trophy_offer.connect(_on_trophy_offer)
     TrophyManager.trophy_bought.connect(_on_trophy_bought)
     TrophyManager.trophies_changed.connect(_on_trophies_changed)
+    ItemManager.inventory_changed.connect(_on_inventory_changed)
+    ItemManager.shop_opened.connect(_on_shop_opened)
+    ItemManager.trap_triggered.connect(_on_trap_status)
+    ItemManager.item_used.connect(_on_item_used_status)
+    ItemManager.item_blocked.connect(_on_item_blocked_status)
+    BuildingManager.build_offer.connect(_on_build_offer)
+    BuildingManager.upgrade_offer.connect(_on_upgrade_offer)
+    BuildingManager.income_granted.connect(_on_income_status)
 
 
 func _build() -> void:
@@ -75,7 +87,7 @@ func _build() -> void:
 
     status_label = Label.new()
     status_label.position = Vector2(96, 8)
-    status_label.size = Vector2(488, 34)
+    status_label.size = Vector2(406, 34)
     status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
     status_label.add_theme_font_size_override("font_size", 20)
     status_label.add_theme_color_override("font_color", UiStyle.CREAM)
@@ -108,6 +120,36 @@ func _build() -> void:
     skip_button.pressed.connect(_on_trophy_skip_pressed)
     trophy_box.add_child(skip_button)
     action_bar.add_child(trophy_box)
+
+    items_button = Button.new()
+    items_button.text = "Przedmioty (0)"
+    items_button.position = Vector2(512, 10)
+    items_button.size = Vector2(150, 32)
+    items_button.visible = false
+    items_button.pressed.connect(_on_items_button_pressed)
+    action_bar.add_child(items_button)
+
+    side_panel = Panel.new()
+    side_panel.add_theme_stylebox_override(
+        "panel", UiStyle.flat(Color(0.09, 0.1, 0.14, 0.96), 16, 2, UiStyle.GOLD_DARK, 8)
+    )
+    side_panel.position = Vector2(966, 84)
+    side_panel.size = Vector2(300, 500)
+    side_panel.visible = false
+    add_child(side_panel)
+
+    var scroll := ScrollContainer.new()
+    scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+    scroll.offset_left = 12
+    scroll.offset_top = 12
+    scroll.offset_right = -12
+    scroll.offset_bottom = -12
+    side_panel.add_child(scroll)
+
+    side_box = VBoxContainer.new()
+    side_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    side_box.add_theme_constant_override("separation", 10)
+    scroll.add_child(side_box)
 
     end_turn_button = Button.new()
     end_turn_button.text = "Zakoncz ture"
@@ -192,11 +234,16 @@ func _on_turn_started(player_id: int) -> void:
     route_box.visible = false
     trophy_box.visible = false
     dice_panel.visible = false
+    items_button.visible = true
+    _refresh_items_button(player_id)
+    _close_side_panel()
     _highlight_card(player_id)
 
 
 func _on_dice_pressed(dice_index: int) -> void:
     dice_box.visible = false
+    items_button.visible = false
+    _close_side_panel()
     GameManager.roll_dice(dice_index)
 
 
@@ -297,3 +344,184 @@ func _on_trophy_bought(player_id: int, count: int) -> void:
 func _on_trophies_changed(player_id: int, count: int) -> void:
     if trophy_labels.has(player_id):
         trophy_labels[player_id].text = "★ %d" % count
+
+
+# ── Side panel (items / shop / buildings) ─────────────────────────
+
+func _open_side_panel(title: String) -> void:
+    for child in side_box.get_children():
+        child.queue_free()
+    var title_label := Label.new()
+    title_label.text = title
+    title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    UiStyle.title_look(title_label, 22, UiStyle.GOLD)
+    side_box.add_child(title_label)
+    side_panel.visible = true
+
+
+func _close_side_panel() -> void:
+    side_panel.visible = false
+    _items_open = false
+
+
+func _side_button(text: String, action: Callable, enabled := true) -> void:
+    var button := Button.new()
+    button.text = text
+    button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    button.custom_minimum_size = Vector2(260, 0)
+    button.disabled = not enabled
+    button.add_theme_font_size_override("font_size", 15)
+    button.pressed.connect(action)
+    side_box.add_child(button)
+
+
+func _refresh_items_button(player_id: int) -> void:
+    items_button.text = "Przedmioty (%d)" % ItemManager.get_items(player_id).size()
+
+
+func _on_inventory_changed(player_id: int, _items: Array) -> void:
+    if GameManager.state != GameManager.State.PLAYER_TURN:
+        return
+    if player_id == TurnManager.current_player_id():
+        _refresh_items_button(player_id)
+
+
+func _on_items_button_pressed() -> void:
+    if _items_open:
+        _close_side_panel()
+        return
+    var player_id := TurnManager.current_player_id()
+    var items := ItemManager.get_items(player_id)
+    _open_side_panel("Przedmioty")
+    _items_open = true
+    if items.is_empty():
+        var empty_label := Label.new()
+        empty_label.text = "Pusto! Odwiedz SKLEP."
+        empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        side_box.add_child(empty_label)
+    for item_id in items:
+        var item := ItemManager.get_definition(item_id)
+        _side_button(
+            "%s\n%s" % [item["name"], item["desc"]],
+            _on_use_item_pressed.bind(String(item_id)),
+        )
+    _side_button("Zamknij", _close_side_panel)
+
+
+func _on_use_item_pressed(item_id: String) -> void:
+    var player_id := TurnManager.current_player_id()
+    match item_id:
+        "rocket", "magnet", "swap":
+            _open_side_panel("Wybierz cel")
+            for player in PlayerManager.players:
+                if player["id"] == player_id:
+                    continue
+                _side_button(
+                    player["name"],
+                    _on_target_pressed.bind(item_id, int(player["id"])),
+                )
+            _side_button("Anuluj", _close_side_panel)
+        "extra_roll":
+            ItemManager.use_item(player_id, item_id)
+            var results := GameManager.roll_pair()
+            _open_side_panel("Extra Roll")
+            _side_button("Wynik: %d" % results[0], _on_forced_move_pressed.bind(int(results[0])))
+            _side_button("Wynik: %d" % results[1], _on_forced_move_pressed.bind(int(results[1])))
+        "loaded_dice":
+            ItemManager.use_item(player_id, item_id)
+            _open_side_panel("Loaded Dice")
+            for steps in range(1, 11):
+                _side_button("Ruch: %d" % steps, _on_forced_move_pressed.bind(steps))
+        _:
+            ItemManager.use_item(player_id, item_id)
+            _close_side_panel()
+
+
+func _on_target_pressed(item_id: String, target_id: int) -> void:
+    ItemManager.use_item(TurnManager.current_player_id(), item_id, target_id)
+    _close_side_panel()
+
+
+func _on_forced_move_pressed(steps: int) -> void:
+    _close_side_panel()
+    dice_box.visible = false
+    items_button.visible = false
+    GameManager.move_forced(steps)
+
+
+func _on_shop_opened(player_id: int, offers: Array) -> void:
+    var player := PlayerManager.get_player(player_id)
+    _open_side_panel("Sklep")
+    status_label.text = "%s wchodzi do sklepu" % player["name"]
+    for item in offers:
+        _side_button(
+            "%s (%d monet)\n%s" % [item["name"], item["price"], item["desc"]],
+            _on_shop_buy_pressed.bind(int(player_id), String(item["id"])),
+            EconomyManager.get_coins(player_id) >= int(item["price"]),
+        )
+    _side_button("Nic nie kupuje", _close_side_panel)
+
+
+func _on_shop_buy_pressed(player_id: int, item_id: String) -> void:
+    if ItemManager.buy(player_id, item_id):
+        var item := ItemManager.get_definition(item_id)
+        status_label.text = "%s kupuje: %s" % [PlayerManager.get_player(player_id)["name"], item["name"]]
+    _close_side_panel()
+
+
+func _on_build_offer(player_id: int, _tile_id: int, cost: int) -> void:
+    _open_side_panel("Wolna dzialka!")
+    status_label.text = "%s moze postawic budynek" % PlayerManager.get_player(player_id)["name"]
+    _side_button(
+        "Postaw budynek ekonomiczny (%d monet)\n+%d monet co ture za poziom" % [
+            cost, BuildingManager.INCOME_PER_LEVEL,
+        ],
+        _on_building_confirm_pressed,
+    )
+    _side_button("Nie teraz", _on_building_skip_pressed)
+
+
+func _on_upgrade_offer(player_id: int, _tile_id: int, cost: int, next_level: int) -> void:
+    _open_side_panel("Budowniczy")
+    status_label.text = "%s moze ulepszyc budynek" % PlayerManager.get_player(player_id)["name"]
+    _side_button(
+        "Ulepsz do poziomu %d (%d monet)" % [next_level, cost],
+        _on_building_confirm_pressed,
+    )
+    _side_button("Nie teraz", _on_building_skip_pressed)
+
+
+func _on_building_confirm_pressed() -> void:
+    BuildingManager.confirm()
+    _close_side_panel()
+
+
+func _on_building_skip_pressed() -> void:
+    BuildingManager.skip()
+    _close_side_panel()
+
+
+func _on_trap_status(victim_id: int, owner_id: int, coins_lost: int) -> void:
+    status_label.text = "Pulapka gracza %s! %s traci %d monet" % [
+        PlayerManager.get_player(owner_id)["name"],
+        PlayerManager.get_player(victim_id)["name"],
+        coins_lost,
+    ]
+
+
+func _on_item_used_status(player_id: int, item_id: String, target_id: int) -> void:
+    var item := ItemManager.get_definition(item_id)
+    var text := "%s uzywa: %s" % [PlayerManager.get_player(player_id)["name"], item["name"]]
+    if target_id >= 0:
+        text += " na %s" % PlayerManager.get_player(target_id)["name"]
+    status_label.text = text
+
+
+func _on_item_blocked_status(target_id: int) -> void:
+    status_label.text = "%s: tarcza blokuje atak!" % PlayerManager.get_player(target_id)["name"]
+
+
+func _on_income_status(player_id: int, amount: int) -> void:
+    status_label.text = "%s dostaje +%d monet z budynku" % [
+        PlayerManager.get_player(player_id)["name"], amount,
+    ]

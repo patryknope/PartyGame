@@ -440,3 +440,36 @@ Scope:
 Placeholder values (playtest needed):
 - Trophy cost: 50 coins
 - Hot potato fuse: 4.5-7s first round, 3.5-6s later; crown round: 40s
+
+---
+
+### IMPLEMENTED
+
+Board life pass + Items and Buildings (prototype subset).
+
+Board life (Mario Party feel):
+- Birds flying across the sky, drifting clouds, butterflies over the meadow
+- Waterfall flowing from the mountains into a river that feeds the pond
+- Bears got accessories per player (cap / glasses / bow tie / ear flower),
+  blush cheeks, and emote bubbles (happy/sad/angry/shock/coin/star)
+- Floating "+10 / -5 / TROFEUM!" popups over bears; trophy star pulses;
+  buildings pop when upgraded
+
+Items (canon names from GDD_ITEMS, prototype subset):
+- Two SKLEP tiles on the board; shop offers 3 items (min 1 utility + 1 warfare
+  guaranteed, per canon), prices by rarity tier (10/20/35/50 placeholders)
+- Utility: Extra Roll, Shield, Loaded Dice, Swap
+- Warfare: Trap (simplified: placed on own tile), Rocket (-15 coins,
+  no damage — HP system not in prototype), Magnet (steals 5-15 coins)
+- 8 inventory slots (canon); items usable in the pre-roll phase (prototype
+  simplification of the war/utility timing split)
+- Shield blocks Rocket/Magnet/Trap; block shows a BLOK! popup
+
+Buildings (GDD_BUILDINGS, Economic Building only):
+- Build on a free neutral tile (40 coins placeholder), one per player,
+  permanent; house marker in owner color with level pips
+- Passive income at the start of the owner's turn (+5/level)
+- Upgrades to level 2 (30) and 3 (50) — stand-in for the Talent system
+- Production (Courier) and Control Buildings deferred to a later pass
+
+Autotest also exercises shop purchases and building construction.

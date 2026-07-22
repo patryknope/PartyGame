@@ -37,6 +37,8 @@ func start_match(player_count: int, rounds: int) -> void:
     EconomyManager.reset(ids, STARTING_COINS)
     BoardManager.reset(ids)
     TrophyManager.reset(ids)
+    ItemManager.reset(ids)
+    BuildingManager.reset(ids)
     TurnManager.reset(ids)
     _set_state(State.PLAYER_TURN)
     round_started.emit(current_round)
@@ -51,6 +53,21 @@ func roll_dice(dice_index: int = 0) -> void:
     dice_rolled.emit(player_id, last_roll)
     _set_state(State.PLAYER_MOVE)
     BoardManager.begin_move(player_id, last_roll)
+
+
+func move_forced(steps: int) -> void:
+    if state != State.PLAYER_TURN:
+        return
+    var player_id := TurnManager.current_player_id()
+    last_roll = steps
+    dice_rolled.emit(player_id, steps)
+    _set_state(State.PLAYER_MOVE)
+    BoardManager.begin_move(player_id, steps)
+
+
+func roll_pair() -> Array:
+    var faces: Array = Dice.TYPES[0]["faces"]
+    return [Dice.roll(faces), Dice.roll(faces)]
 
 
 func end_turn() -> void:
@@ -77,6 +94,12 @@ func return_to_menu() -> void:
 func _on_move_finished(player_id: int) -> void:
     if last_roll > 0:
         BoardManager.resolve_tile(player_id)
+        var tile_id: int = BoardManager.positions[player_id]
+        ItemManager.trigger_trap(player_id, tile_id)
+        if BoardManager.get_tile(tile_id)["type"] == "shop":
+            ItemManager.open_shop(player_id)
+        else:
+            BuildingManager.consider_offer(player_id, tile_id)
     _set_state(State.PLAYER_TURN)
 
 
