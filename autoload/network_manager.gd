@@ -12,27 +12,49 @@ signal joined
 signal connection_failed
 signal disconnected_from_host
 signal network_players_changed(count: int)
+signal upnp_completed(success: bool, external_ip: String)
 signal minigame_start_requested
 signal minigame_positions(positions: Dictionary)
 signal minigame_event(kind: String, data: Dictionary)
 
 const PORT := 7777
 const MAX_CLIENTS := 3
+const CONNECT_TIMEOUT := 12.0
 
 var is_online := false
 var my_player_id := 0
 var peer_to_player := {}
 
 var _join_order: Array = []
+var _connected := false
+var _upnp_thread: Thread
+
+
+func get_lan_addresses() -> Array:
+    var addresses: Array = []
+    for address in IP.get_local_addresses():
+        if address.begins_with("192.168.") or address.begins_with("10."):
+            addresses.append(address)
+        elif address.begins_with("172."):
+            var second := int(address.split(".")[1])
+            if second >= 16 and second <= 31:
+                addresses.append(address)
+    return addresses
 
 
 func _ready() -> void:
     multiplayer.peer_connected.connect(_on_peer_connected)
     multiplayer.peer_disconnected.connect(_on_peer_disconnected)
-    multiplayer.connected_to_server.connect(func(): joined.emit())
+    multiplayer.connected_to_server.connect(_on_connected_to_server)
     multiplayer.connection_failed.connect(_on_connection_failed)
     multiplayer.server_disconnected.connect(_on_server_disconnected)
     _connect_relays()
+
+
+func _exit_tree() -> void:
+    if _upnp_thread != null and _upnp_thread.is_started():
+        _upnp_thread.wait_to_finish()
+        _upnp_thread = null
 
 
 func is_server() -> bool:
@@ -70,11 +92,50 @@ func host_game() -> void:
     _join_order.clear()
     hosted.emit()
     network_players_changed.emit(player_count())
+    _start_upnp()
 
 
 func join_game(address: String) -> void:
-    multiplayer.multiplayer_peer = _create_client_peer(address)
+    _connected = false
+    multiplayer.multiplayer_peer = _create_client_peer(address.strip_edges())
     is_online = true
+    get_tree().create_timer(CONNECT_TIMEOUT).timeout.connect(_on_connect_timeout)
+
+
+func _on_connect_timeout() -> void:
+    if is_online and not multiplayer.is_server() and not _connected:
+        leave_game()
+        connection_failed.emit()
+
+
+func _start_upnp() -> void:
+    # Tries to open UDP 7777 on the router so friends can join over
+    # the internet without manual port forwarding. Runs in a thread —
+    # discovery takes a few seconds.
+    if _upnp_thread != null and _upnp_thread.is_started():
+        return
+    _upnp_thread = Thread.new()
+    _upnp_thread.start(_upnp_worker)
+
+
+func _upnp_worker() -> void:
+    var upnp := UPNP.new()
+    var success := false
+    var external_ip := ""
+    if upnp.discover() == UPNP.UPNP_RESULT_SUCCESS:
+        var gateway := upnp.get_gateway()
+        if gateway != null and gateway.is_valid_gateway():
+            var mapped := upnp.add_port_mapping(PORT, PORT, "PartyGame", "UDP")
+            success = mapped == UPNP.UPNP_RESULT_SUCCESS
+            external_ip = upnp.query_external_address()
+    call_deferred("_upnp_done", success, external_ip)
+
+
+func _upnp_done(success: bool, external_ip: String) -> void:
+    if _upnp_thread != null:
+        _upnp_thread.wait_to_finish()
+        _upnp_thread = null
+    upnp_completed.emit(success, external_ip)
 
 
 func leave_game() -> void:
@@ -106,6 +167,11 @@ func _on_peer_disconnected(peer_id: int) -> void:
     # (GDD grace period 5 s / timeout 60 s is an Etap 2.1 task).
     if GameManager.state != GameManager.State.MAIN_MENU:
         GameManager.return_to_menu()
+
+
+func _on_connected_to_server() -> void:
+    _connected = true
+    joined.emit()
 
 
 func _on_connection_failed() -> void:

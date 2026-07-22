@@ -10,6 +10,7 @@ var ip_edit: LineEdit
 var net_status: Label
 var lobby_panel: PanelContainer
 var lobby_label: Label
+var lobby_ip_label: Label
 var lobby_start: Button
 
 
@@ -137,6 +138,12 @@ func _ready() -> void:
     lobby_label.add_theme_color_override("font_color", UiStyle.CREAM)
     lobby_box.add_child(lobby_label)
 
+    lobby_ip_label = Label.new()
+    lobby_ip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    lobby_ip_label.add_theme_font_size_override("font_size", 14)
+    lobby_ip_label.add_theme_color_override("font_color", Color(0.75, 0.9, 1.0))
+    lobby_box.add_child(lobby_ip_label)
+
     lobby_start = Button.new()
     lobby_start.text = "Start meczu"
     lobby_start.custom_minimum_size = Vector2(0, 48)
@@ -153,6 +160,7 @@ func _ready() -> void:
     NetworkManager.connection_failed.connect(_on_net_failed)
     NetworkManager.disconnected_from_host.connect(_on_net_disconnected)
     NetworkManager.network_players_changed.connect(_on_net_players_changed)
+    NetworkManager.upnp_completed.connect(_on_upnp_completed)
 
     var controls := Label.new()
     controls.text = "Sterowanie w minigrze:  G1 WASD    G2 strzalki    G3 TFGH    G4 IJKL  |  online: WASD lub strzalki"
@@ -177,14 +185,33 @@ func _on_host_pressed() -> void:
 
 
 func _on_join_pressed() -> void:
-    net_status.text = "Lacze z %s..." % ip_edit.text
+    net_status.text = "Lacze z %s... (do %d s)" % [ip_edit.text.strip_edges(), int(NetworkManager.CONNECT_TIMEOUT)]
     NetworkManager.join_game(ip_edit.text)
 
 
 func _on_net_hosted() -> void:
     lobby_panel.visible = true
     lobby_start.visible = true
+    var lan := NetworkManager.get_lan_addresses()
+    lobby_ip_label.text = "LAN: %s\nInternet: szukam adresu (UPnP)..." % (
+        ", ".join(PackedStringArray(lan)) if not lan.is_empty() else "brak"
+    )
     _refresh_lobby()
+
+
+func _on_upnp_completed(success: bool, external_ip: String) -> void:
+    var lan := NetworkManager.get_lan_addresses()
+    var lan_text: String = ", ".join(PackedStringArray(lan)) if not lan.is_empty() else "brak"
+    if success and external_ip != "":
+        lobby_ip_label.text = (
+            "LAN (ta sama siec): %s\nInternet: %s (port 7777 otwarty przez UPnP)\n" +
+            "Jesli Windows zapyta o zapore — kliknij Zezwol!"
+        ) % [lan_text, external_ip]
+    else:
+        lobby_ip_label.text = (
+            "LAN (ta sama siec): %s\nInternet: UPnP nie zadzialal — przekieruj port 7777 UDP\n" +
+            "na routerze albo uzyjcie VPN (np. Radmin/ZeroTier)."
+        ) % lan_text
 
 
 func _on_net_joined() -> void:
@@ -195,7 +222,7 @@ func _on_net_joined() -> void:
 
 
 func _on_net_failed() -> void:
-    net_status.text = "Nie udalo sie polaczyc."
+    net_status.text = "Nie udalo sie polaczyc.\nSprawdz IP (przez internet: adres publiczny\nhosta, nie 192.168.x) i zapore Windows."
     lobby_panel.visible = false
 
 
@@ -213,7 +240,7 @@ func _on_net_players_changed(count: int) -> void:
 
 func _refresh_lobby() -> void:
     if NetworkManager.is_online and NetworkManager.is_server():
-        lobby_label.text = "Graczy w lobby: %d / 4\nPodaj znajomym swoj adres IP." % NetworkManager.player_count()
+        lobby_label.text = "Graczy w lobby: %d / 4" % NetworkManager.player_count()
 
 
 func _on_lobby_start_pressed() -> void:
