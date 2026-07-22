@@ -69,6 +69,10 @@ Etap 1 — Local Prototype: first playable build DELIVERED, awaiting Michał's p
 
 ## Recent Major Decisions
 
+- Prototype now plays to the canon win condition: Main Trophy purchasable on the
+  board (50 coins placeholder, respawns after purchase), most Trophies wins,
+  coins break ties. Dice selection added (Basic/Safe/Risk). Minigame pool grew
+  to 3: Kolorowy Chaos, Goracy Ziemniak, Kradziez Korony (2026-07-22).
 - Roulette is the board foundation: the whole Casino board sits on one giant
   Roulette (3 colors: red/black/green); position = current color; Dealer spins
   at round start; team minigames use a color-weighted soft draw (2026-07-22).

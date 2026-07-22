@@ -415,3 +415,28 @@ Open Questions:
 - Asymmetric layouts (2v4, 1v5) vs TEAM_EVEN / ONE_VS_ALL categories — noted inconsistency
 - Does the spin rotate colors under players, or does color derive purely from position?
 - Colors in FFA minigames
+
+---
+
+### IMPLEMENTED
+
+Prototype gameplay push: trophies, dice selection, two new minigames.
+
+Scope:
+- TrophyManager + Main Trophy on the board: one trophy at a time, marked with a
+  bobbing gold star; stepping on its tile mid-move pauses movement and offers a
+  purchase (Kup / Nie kupuj); after buying it respawns on another tile
+- Win condition is now canon-correct: most Trophies wins, coins break ties
+  (prototype stand-in for the Wealth formula)
+- Dice selection before each roll (GDD_DICE): Basic 1-8, Safe 3-6, Risk 0/10;
+  rolling 0 skips movement and tile resolution
+- New minigame: Goracy Ziemniak (hot potato — hidden fuse, pass by touch,
+  explosion eliminates the holder, last bear wins)
+- New minigame: Kradziez Korony (crown steal — hold the crown to score,
+  touch the wearer to steal; longest total hold wins)
+- Minigame draw now rotates over 3 games; HUD shows trophy counts per player
+- Headless autotest exercises the trophy purchase flow
+
+Placeholder values (playtest needed):
+- Trophy cost: 50 coins
+- Hot potato fuse: 4.5-7s first round, 3.5-6s later; crown round: 40s

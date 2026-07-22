@@ -27,11 +27,32 @@ var _anim_queue: Array = []
 var _animating := false
 var _active_player := -1
 var _road_layer: Control
+var _trophy_marker: Node2D
+
+
+class TrophyMarker extends Node2D:
+    func _ready() -> void:
+        var bob := create_tween().set_loops()
+        bob.tween_property(self, "position:y", position.y - 6.0, 0.6)\
+            .set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+        bob.tween_property(self, "position:y", position.y, 0.6)\
+            .set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+    func _draw() -> void:
+        var gold := Color(0.99, 0.83, 0.28)
+        var points := PackedVector2Array()
+        for i in 10:
+            var radius := 15.0 if i % 2 == 0 else 6.5
+            var angle := -PI / 2.0 + TAU * i / 10.0
+            points.append(Vector2(cos(angle), sin(angle)) * radius)
+        draw_colored_polygon(points, gold)
+        draw_circle(Vector2.ZERO, 4.5, Color(1, 1, 1, 0.85))
 
 
 func _ready() -> void:
     BoardManager.player_stepped.connect(_on_player_stepped)
     TurnManager.turn_started.connect(_on_turn_started)
+    TrophyManager.trophy_moved.connect(_on_trophy_moved)
 
     var scenery := Scenery.new()
     scenery.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -166,6 +187,16 @@ func setup_pawns() -> void:
 
 func _pawn_target(player_id: int, tile_id: int) -> Vector2:
     return tile_positions[tile_id] + PAWN_OFFSETS[player_id]
+
+
+func _on_trophy_moved(tile_id: int) -> void:
+    if _trophy_marker != null:
+        _trophy_marker.queue_free()
+    if not tile_positions.has(tile_id):
+        return
+    _trophy_marker = TrophyMarker.new()
+    _trophy_marker.position = tile_positions[tile_id] - Vector2(0, 42)
+    add_child(_trophy_marker)
 
 
 func _on_turn_started(player_id: int) -> void:

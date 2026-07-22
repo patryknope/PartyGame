@@ -13,6 +13,22 @@ const MINIGAMES: Array = [
         "min_players": 2,
         "max_players": 4,
     },
+    {
+        "id": "hot_potato",
+        "name": "Goracy Ziemniak",
+        "script": "res://minigames/hot_potato/hot_potato.gd",
+        "rules": "Jeden z graczy trzyma bombe z ukrytym lontem.\nDotknij innego gracza, zeby mu ja przekazac!\nGdy bomba wybuchnie, jej posiadacz odpada.\nOstatni gracz na arenie wygrywa.",
+        "min_players": 2,
+        "max_players": 4,
+    },
+    {
+        "id": "crown_steal",
+        "name": "Kradziez Korony",
+        "script": "res://minigames/crown_steal/crown_steal.gd",
+        "rules": "Na srodku areny lezy korona.\nPodnies ja i uciekaj — czas noszenia to punkty!\nDotknij posiadacza korony, zeby mu ja ukrasc.\nWygrywa ten, kto nosil korone najdluzej.",
+        "min_players": 2,
+        "max_players": 4,
+    },
 ]
 
 var current: Dictionary = {}

@@ -21,6 +21,7 @@ PlayerManager="*res://autoload/player_manager.gd"
 EconomyManager="*res://autoload/economy_manager.gd"
 TurnManager="*res://autoload/turn_manager.gd"
 BoardManager="*res://autoload/board_manager.gd"
+TrophyManager="*res://autoload/trophy_manager.gd"
 MinigameManager="*res://autoload/minigame_manager.gd"
 GameManager="*res://autoload/game_manager.gd"
 

@@ -18,6 +18,7 @@ var positions := {}
 
 var _moving_player := -1
 var _steps_left := 0
+var _awaiting_trophy := false
 
 
 func _ready() -> void:
@@ -43,6 +44,7 @@ func reset(player_ids: Array) -> void:
         positions[player_id] = START_TILE
     _moving_player = -1
     _steps_left = 0
+    _awaiting_trophy = false
 
 
 func get_tile(tile_id: int) -> Dictionary:
@@ -82,6 +84,13 @@ func _advance() -> void:
     _step_to(options[0])
 
 
+func resume_move() -> void:
+    if not _awaiting_trophy:
+        return
+    _awaiting_trophy = false
+    _advance()
+
+
 func _step_to(tile_id: int) -> void:
     positions[_moving_player] = tile_id
     _steps_left -= 1
@@ -89,4 +98,11 @@ func _step_to(tile_id: int) -> void:
     if tile_id == START_TILE:
         EconomyManager.add_coins(_moving_player, START_PASS_BONUS)
         start_passed.emit(_moving_player, START_PASS_BONUS)
+    if (
+        tile_id == TrophyManager.trophy_tile
+        and EconomyManager.get_coins(_moving_player) >= TrophyManager.TROPHY_COST
+    ):
+        _awaiting_trophy = true
+        TrophyManager.offer(_moving_player)
+        return
     _advance()

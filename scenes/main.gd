@@ -113,8 +113,9 @@ func _on_match_ended(final_ranking: Array) -> void:
     var lines: Array[String] = []
     for i in final_ranking.size():
         var player := PlayerManager.get_player(final_ranking[i])
+        var trophies := TrophyManager.get_trophies(final_ranking[i])
         var coins := EconomyManager.get_coins(final_ranking[i])
-        lines.append("%d. %s — %d monet" % [i + 1, player["name"], coins])
+        lines.append("%d. %s — ★ %d, %d monet" % [i + 1, player["name"], trophies, coins])
     _panel_text(panel, "\n".join(lines))
     _panel_button(panel, "Nowy mecz", func(): GameManager.return_to_menu())
 
@@ -215,6 +216,7 @@ func _setup_autotest() -> void:
     GameManager.minigame_rewards_granted.connect(
         func(_ranking, _rewards): GameManager.continue_after_minigame.call_deferred()
     )
+    TrophyManager.trophy_offer.connect(func(_pid, _cost): TrophyManager.buy.call_deferred())
     GameManager.state_changed.connect(_autotest_on_state)
     GameManager.match_ended.connect(_autotest_on_match_end)
     get_tree().create_timer(60.0).timeout.connect(_autotest_watchdog)
@@ -242,9 +244,12 @@ func _autotest_on_match_end(final_ranking: Array) -> void:
     for i in final_ranking.size():
         var pid: int = final_ranking[i]
         var coins := EconomyManager.get_coins(pid)
-        print("[AUTOTEST] %d. %s — %d coins" % [i + 1, PlayerManager.get_player(pid)["name"], coins])
-        if coins < 0:
-            push_error("[AUTOTEST] negative coins")
+        var trophies := TrophyManager.get_trophies(pid)
+        print("[AUTOTEST] %d. %s — %d trophies, %d coins" % [
+            i + 1, PlayerManager.get_player(pid)["name"], trophies, coins,
+        ])
+        if coins < 0 or trophies < 0:
+            push_error("[AUTOTEST] negative coins or trophies")
             get_tree().quit(1)
             return
     _autotest_matches_played += 1

@@ -36,17 +36,18 @@ func start_match(player_count: int, rounds: int) -> void:
     var ids := PlayerManager.get_player_ids()
     EconomyManager.reset(ids, STARTING_COINS)
     BoardManager.reset(ids)
+    TrophyManager.reset(ids)
     TurnManager.reset(ids)
     _set_state(State.PLAYER_TURN)
     round_started.emit(current_round)
     TurnManager.start_round()
 
 
-func roll_dice() -> void:
+func roll_dice(dice_index: int = 0) -> void:
     if state != State.PLAYER_TURN:
         return
     var player_id := TurnManager.current_player_id()
-    last_roll = Dice.roll(Dice.BASIC)
+    last_roll = Dice.roll(Dice.TYPES[dice_index]["faces"])
     dice_rolled.emit(player_id, last_roll)
     _set_state(State.PLAYER_MOVE)
     BoardManager.begin_move(player_id, last_roll)
@@ -61,7 +62,7 @@ func end_turn() -> void:
 func continue_after_minigame() -> void:
     if current_round >= total_rounds:
         _set_state(State.MATCH_END)
-        match_ended.emit(EconomyManager.ranking())
+        match_ended.emit(TrophyManager.ranking())
     else:
         current_round += 1
         _set_state(State.PLAYER_TURN)
@@ -74,7 +75,8 @@ func return_to_menu() -> void:
 
 
 func _on_move_finished(player_id: int) -> void:
-    BoardManager.resolve_tile(player_id)
+    if last_roll > 0:
+        BoardManager.resolve_tile(player_id)
     _set_state(State.PLAYER_TURN)
 
 

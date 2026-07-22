@@ -5,13 +5,15 @@ extends Control
 
 var round_label: Label
 var status_label: Label
-var roll_button: Button
+var dice_box: HBoxContainer
 var end_turn_button: Button
 var route_box: HBoxContainer
+var trophy_box: HBoxContainer
 var dice_panel: Panel
 var dice_label: Label
 var player_cards := {}
 var coin_labels := {}
+var trophy_labels := {}
 
 var _dice_anim_id := 0
 
@@ -26,6 +28,9 @@ func _ready() -> void:
     BoardManager.tile_resolved.connect(_on_tile_resolved)
     BoardManager.start_passed.connect(_on_start_passed)
     EconomyManager.coins_changed.connect(_on_coins_changed)
+    TrophyManager.trophy_offer.connect(_on_trophy_offer)
+    TrophyManager.trophy_bought.connect(_on_trophy_bought)
+    TrophyManager.trophies_changed.connect(_on_trophies_changed)
 
 
 func _build() -> void:
@@ -76,13 +81,33 @@ func _build() -> void:
     status_label.add_theme_color_override("font_color", UiStyle.CREAM)
     action_bar.add_child(status_label)
 
-    roll_button = Button.new()
-    roll_button.text = "Rzuc koscia!"
-    roll_button.position = Vector2(240, 46)
-    roll_button.size = Vector2(200, 44)
-    roll_button.visible = false
-    roll_button.pressed.connect(func(): GameManager.roll_dice())
-    action_bar.add_child(roll_button)
+    dice_box = HBoxContainer.new()
+    dice_box.position = Vector2(96, 46)
+    dice_box.add_theme_constant_override("separation", 14)
+    dice_box.visible = false
+    for i in Dice.TYPES.size():
+        var dice_button := Button.new()
+        dice_button.text = Dice.TYPES[i]["name"]
+        dice_button.custom_minimum_size = Vector2(152, 44)
+        dice_button.pressed.connect(_on_dice_pressed.bind(i))
+        dice_box.add_child(dice_button)
+    action_bar.add_child(dice_box)
+
+    trophy_box = HBoxContainer.new()
+    trophy_box.position = Vector2(140, 46)
+    trophy_box.add_theme_constant_override("separation", 20)
+    trophy_box.visible = false
+    var buy_button := Button.new()
+    buy_button.text = "Kup trofeum (%d)" % TrophyManager.TROPHY_COST
+    buy_button.custom_minimum_size = Vector2(190, 44)
+    buy_button.pressed.connect(_on_trophy_buy_pressed)
+    trophy_box.add_child(buy_button)
+    var skip_button := Button.new()
+    skip_button.text = "Nie kupuj"
+    skip_button.custom_minimum_size = Vector2(150, 44)
+    skip_button.pressed.connect(_on_trophy_skip_pressed)
+    trophy_box.add_child(skip_button)
+    action_bar.add_child(trophy_box)
 
     end_turn_button = Button.new()
     end_turn_button.text = "Zakoncz ture"
@@ -104,6 +129,7 @@ func setup_players() -> void:
         card.queue_free()
     player_cards.clear()
     coin_labels.clear()
+    trophy_labels.clear()
     for player in PlayerManager.players:
         var card := Panel.new()
         card.position = Vector2(16 + 172 * player["id"], 12)
@@ -133,6 +159,14 @@ func setup_players() -> void:
         coins_label.add_theme_color_override("font_color", UiStyle.GOLD)
         card.add_child(coins_label)
         coin_labels[player["id"]] = coins_label
+
+        var trophy_label := Label.new()
+        trophy_label.text = "★ 0"
+        trophy_label.position = Vector2(104, 30)
+        trophy_label.add_theme_font_size_override("font_size", 17)
+        trophy_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.92))
+        card.add_child(trophy_label)
+        trophy_labels[player["id"]] = trophy_label
     _highlight_card(-1)
 
 
@@ -152,18 +186,24 @@ func _on_round_started(round_number: int) -> void:
 
 func _on_turn_started(player_id: int) -> void:
     var player := PlayerManager.get_player(player_id)
-    status_label.text = "Tura gracza: %s" % player["name"]
-    roll_button.visible = true
+    status_label.text = "Tura gracza: %s — wybierz kosc" % player["name"]
+    dice_box.visible = true
     end_turn_button.visible = false
     route_box.visible = false
+    trophy_box.visible = false
     dice_panel.visible = false
     _highlight_card(player_id)
+
+
+func _on_dice_pressed(dice_index: int) -> void:
+    dice_box.visible = false
+    GameManager.roll_dice(dice_index)
 
 
 func _on_dice_rolled(player_id: int, result: int) -> void:
     var player := PlayerManager.get_player(player_id)
     status_label.text = "%s rzuca..." % player["name"]
-    roll_button.visible = false
+    dice_box.visible = false
     dice_panel.visible = true
     _animate_dice(player["name"], result)
 
@@ -179,7 +219,10 @@ func _animate_dice(player_name: String, result: int) -> void:
     if anim_id != _dice_anim_id or not is_inside_tree():
         return
     dice_label.text = str(result)
-    status_label.text = "%s wyrzucil: %d" % [player_name, result]
+    if result == 0:
+        status_label.text = "%s wyrzucil: 0 — stoi w miejscu!" % player_name
+    else:
+        status_label.text = "%s wyrzucil: %d" % [player_name, result]
 
 
 func _on_route_choice_required(_player_id: int, options: Array) -> void:
@@ -228,3 +271,29 @@ func _on_end_turn_pressed() -> void:
 func _on_coins_changed(player_id: int, coins: int) -> void:
     if coin_labels.has(player_id):
         coin_labels[player_id].text = str(coins)
+
+
+func _on_trophy_offer(player_id: int, cost: int) -> void:
+    var player := PlayerManager.get_player(player_id)
+    status_label.text = "%s: kupic trofeum za %d monet?" % [player["name"], cost]
+    trophy_box.visible = true
+
+
+func _on_trophy_buy_pressed() -> void:
+    trophy_box.visible = false
+    TrophyManager.buy()
+
+
+func _on_trophy_skip_pressed() -> void:
+    trophy_box.visible = false
+    TrophyManager.skip()
+
+
+func _on_trophy_bought(player_id: int, count: int) -> void:
+    var player := PlayerManager.get_player(player_id)
+    status_label.text = "%s zdobywa trofeum! (ma %d)" % [player["name"], count]
+
+
+func _on_trophies_changed(player_id: int, count: int) -> void:
+    if trophy_labels.has(player_id):
+        trophy_labels[player_id].text = "★ %d" % count
